@@ -1,0 +1,25 @@
+# AI / LLM
+anthropic>=0.40.0
+
+# Text-to-Speech
+elevenlabs>=1.0.0
+
+# YouTube Upload
+google-api-python-client>=2.100.0
+google-auth-oauthlib>=1.2.0
+
+# Audio Processing
+pydub>=0.25.1
+
+# Image Processing / Thumbnails
+Pillow>=10.0.0
+
+# Config & Environment
+pyyaml>=6.0
+python-dotenv>=1.0.0
+
+# HTTP
+requests>=2.31.0
+
+# MCP Server SDK
+mcp>=1.0.0

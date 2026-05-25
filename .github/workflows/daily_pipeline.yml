@@ -1,0 +1,87 @@
+name: The Hollow Hour — Daily Pipeline
+
+on:
+  schedule:
+    # Reminder at 1 PM UTC (9 AM EST)
+    - cron: '0 13 * * *'
+    # Pipeline at 2 PM UTC (10 AM EST) — gives 1hr to respond
+    - cron: '0 14 * * *'
+  workflow_dispatch:
+    inputs:
+      thought_seed:
+        description: 'Optional: Your thought of the day (leave empty for auto)'
+        required: false
+        type: string
+
+jobs:
+  produce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true  # Pull assets from Git LFS
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Initialize database
+        run: python3 data/init_db.py
+
+      - name: Send daily reminder (only at 1PM UTC)
+        if: github.event.schedule == '0 13 * * *'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python3 -c "from utils.telegram_bot import TelegramBot; TelegramBot().send_reminder()"
+
+      - name: Exit if reminder-only run
+        if: github.event.schedule == '0 13 * * *'
+        run: exit 0
+
+      - name: Write seed from workflow input
+        if: inputs.thought_seed != ''
+        run: echo "${{ inputs.thought_seed }}" > data/daily_seed.txt
+
+      - name: Run pipeline
+        env:
+          CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          KLING_API_KEY: ${{ secrets.KLING_API_KEY }}
+          KLING_API_SECRET: ${{ secrets.KLING_API_SECRET }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+        run: python3 main.py --date $(date +%Y-%m-%d)
+
+      - name: Upload output on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-run-${{ github.run_id }}
+          path: output/
+          retention-days: 7
+
+      - name: Upload pipeline log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-log-$(date +%Y-%m-%d)
+          path: output/*/pipeline.log
+          retention-days: 30

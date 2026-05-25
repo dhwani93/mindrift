@@ -1,0 +1,82 @@
+{
+  "seed_prompts": {
+    "horror": [
+      "A family moves into a house where the previous owners vanished without a trace. The house seems to remember them.",
+      "A night-shift security guard at an abandoned hospital begins receiving calls from a disconnected internal phone line.",
+      "A deep-sea research team discovers a structure on the ocean floor that predates all known civilizations.",
+      "A woman starts receiving letters from herself, dated three weeks in the future. Each one describes her own death differently.",
+      "A small town's children all begin drawing the same figure — a tall man with no face standing behind their houses.",
+      "A hiker finds a cabin in the woods with a journal inside. The last entry is dated tomorrow.",
+      "A 911 operator receives a call from a woman who says she's trapped inside her own reflection.",
+      "A photographer develops old film rolls found in an estate sale. Every photo contains the same stranger staring at the camera.",
+      "A podcast host interviews a man who claims he's been dead for six years. His death certificate confirms it.",
+      "A sleep researcher discovers that all her subjects are dreaming about the same room — a room that exists in real life."
+    ],
+    "psychological_thriller": [
+      "A therapist realizes her newest patient is describing memories that belong to her — memories she's never shared with anyone.",
+      "A man wakes up in a hotel room with a note in his own handwriting: 'Do not trust the woman in room 304.'",
+      "A jury member becomes convinced the defendant is innocent — because she committed the crime herself.",
+      "A woman discovers that her husband of 15 years has no records of existing before their marriage.",
+      "A detective investigating a string of disappearances realizes all the victims look exactly like him at different ages."
+    ],
+    "paranormal": [
+      "A family's home security cameras capture someone walking through their house every night at 3:17 AM. No one is there.",
+      "A child begins speaking a language that linguists identify as a dialect extinct for 400 years.",
+      "A woman inherits a mirror from her grandmother with one rule: never look into it after midnight.",
+      "A group of friends play with a spirit board and contact something that knows details about their futures — details that start coming true.",
+      "Residents of an apartment building all report hearing the same conversation through their walls — a conversation between two people who died in 1987."
+    ]
+  },
+  "true_crime_curated": [
+    {
+      "title": "The Dyatlov Pass Incident",
+      "summary": "In 1959, nine Russian hikers died under mysterious circumstances in the Ural Mountains. Their tent was torn open from the inside, and they fled into -30C temperatures wearing almost nothing.",
+      "category": "unsolved_mystery"
+    },
+    {
+      "title": "The Hinterkaifeck Murders",
+      "summary": "In 1922, six people were murdered on a remote German farmstead. Days before, the farmer found footprints in the snow leading to the farm — but none leading away.",
+      "category": "true_crime"
+    },
+    {
+      "title": "The Somerton Man",
+      "summary": "In 1948, an unidentified man was found dead on Somerton Beach, Australia. His identity remains unknown. A hidden pocket in his trousers contained a scrap of paper reading 'Tamam Shud' — meaning 'ended.'",
+      "category": "unsolved_mystery"
+    },
+    {
+      "title": "The Lead Masks Case",
+      "summary": "In 1966, two electronic technicians were found dead on a hilltop in Brazil wearing crude lead eye masks. A notebook nearby contained instructions for ingesting capsules and waiting for a 'signal.'",
+      "category": "unsolved_mystery"
+    },
+    {
+      "title": "The Flannan Isles Lighthouse Disappearance",
+      "summary": "In December 1900, three lighthouse keepers vanished from the Flannan Isles lighthouse in Scotland. The clock had stopped, an untouched meal sat on the table, and the logbook's final entry described a storm — but weather records showed clear skies.",
+      "category": "unsolved_mystery"
+    },
+    {
+      "title": "The Max Headroom Broadcast Intrusion",
+      "summary": "In 1987, someone hijacked two Chicago TV stations wearing a Max Headroom mask. The culprit was never identified. The second intrusion lasted 90 seconds and remains one of the most disturbing broadcast hijackings in history.",
+      "category": "unsolved_mystery"
+    },
+    {
+      "title": "The Circleville Letters",
+      "summary": "Starting in 1976, residents of Circleville, Ohio received anonymous threatening letters exposing their secrets. A man was convicted, but the letters continued from prison. The writer was never identified.",
+      "category": "unsolved_mystery"
+    },
+    {
+      "title": "The Jamison Family Disappearance",
+      "summary": "In 2009, Bobby, Sherilynn, and their six-year-old daughter Madyson vanished in the Oklahoma mountains. Security footage showed them loading their truck in a trance-like state. $32,000 cash was found in the truck.",
+      "category": "unsolved_mystery"
+    },
+    {
+      "title": "The Toybox Killer",
+      "summary": "David Parker Ray constructed a $100,000 torture chamber inside a truck trailer in Truth or Consequences, New Mexico. He played a recorded message to his victims. No bodies were ever found.",
+      "category": "true_crime"
+    },
+    {
+      "title": "The Elevator Game of Elisa Lam",
+      "summary": "In 2013, Elisa Lam was found dead in the Cecil Hotel's rooftop water tank. Security footage showed her behaving erratically in an elevator, pressing all buttons and appearing to talk to someone invisible.",
+      "category": "unsolved_mystery"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+channel:
+  name: "Mindrift"
+  tagline: "What if everything you know is just one version?"
+  upload_time_utc: "22:00"  # 6 PM EST
+  shorts_times_utc: ["13:00", "16:00", "19:00"]
+
+content:
+  categories:
+    - horror
+    - true_crime
+    - unsolved_mystery
+    - psychological_thriller
+    - paranormal
+  weekly_schedule:
+    monday: original
+    tuesday: true_crime_curated
+    wednesday: original
+    thursday: true_crime_curated
+    friday: original
+    saturday: true_crime_curated
+    sunday: original
+  parts_per_story: 3          # Split each story into 3 parts
+  words_per_part: 120         # ~45-60 seconds after speed-up
+  max_part_duration_sec: 60   # Hard cap — 60 seconds max per part
+
+voice:
+  voice_id: "GsfuR3Wo2BACoxELWyEF"
+  model_id: "eleven_turbo_v2_5"
+  stability: 0.50
+  similarity_boost: 0.80
+  style: 0.45
+  speed_multiplier: 1.18       # Speed up narration for TikTok-style pacing
+
+video:
+  resolution: "1080x1920"    # Vertical 9:16 for Shorts/Reels/TikTok
+  fps: 30
+  ken_burns_zoom_speed: 0.002
+  color_grade: "dark_teal_amber"
+  subtitle_font: "Montserrat-Bold"
+  subtitle_size: 28           # Larger for mobile
+  grain_opacity: 0.10
+  vignette_strength: "PI/4"
+  use_stock_video: true       # Prefer stock videos over static images
+
+platforms:
+  youtube_shorts: true
+  instagram_reels: false
+  tiktok: false
+
+audio:
+  target_lufs: -16
+  ambient_volume_db: -22
+  bass_boost_db: 2
+  bass_freq_hz: 120
+  high_cut_freq_hz: 10000
+  compression_ratio: 2.0
+  compression_threshold_db: -20
+
+seo:
+  default_tags:
+    - "horror story"
+    - "scary story"
+    - "true crime"
+    - "unsolved mystery"
+    - "mindrift"
+    - "creepy"
+    - "horror narration"
+    - "scary stories to fall asleep to"
+    - "true scary stories"
+    - "mystery"
+
+images:
+  provider: "pexels"
+  images_per_segment: 1
+  mood_keywords:
+    - "dark"
+    - "eerie"
+    - "abandoned"
+    - "fog"
+    - "shadow"
+    - "night"
+
