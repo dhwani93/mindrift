@@ -32,6 +32,65 @@ class Orchestrator:
         if result.returncode != 0:
             raise RuntimeError(f"FFmpeg failed ({description}): {result.stderr[-200:]}")
 
+    def _add_captions(self, input_path: Path, output_path: Path, text: str, duration: float) -> None:
+        """Add word-by-word captions in Instagram/TikTok style.
+
+        Shows 3-4 words at a time, centered, large white text with black outline.
+        """
+        import re
+        # Clean text
+        clean = re.sub(r'\[.*?\]', '', text).strip()
+        words = clean.split()
+
+        # Group into chunks of 3-4 words
+        chunk_size = 3
+        chunks = []
+        for j in range(0, len(words), chunk_size):
+            chunks.append(" ".join(words[j:j + chunk_size]))
+
+        # Calculate timing per chunk
+        time_per_chunk = duration / len(chunks) if chunks else duration
+
+        # Build FFmpeg drawtext filter chain
+        filters = []
+        for idx, chunk in enumerate(chunks):
+            start = idx * time_per_chunk
+            end = (idx + 1) * time_per_chunk
+            safe_chunk = chunk.replace("'", "\u2019").replace(":", "\\:").replace("\\", "")
+            filters.append(
+                f"drawtext=text='{safe_chunk}'"
+                f":fontsize=52:fontcolor=white:borderw=4:bordercolor=black"
+                f":x=(w-text_w)/2:y=h*0.75"
+                f":enable='between(t,{start:.2f},{end:.2f})'"
+            )
+
+        if not filters:
+            import shutil
+            shutil.copy2(input_path, output_path)
+            return
+
+        filter_str = ",".join(filters)
+
+        cmd = [
+            "ffmpeg", "-y",
+            "-i", str(input_path),
+            "-vf", filter_str,
+            "-c:v", "libx264",
+            "-preset", "fast",
+            "-crf", "23",
+            "-c:a", "copy",
+            "-pix_fmt", "yuv420p",
+            str(output_path),
+        ]
+
+        try:
+            self._run_ffmpeg(cmd, "add_captions")
+        except RuntimeError as e:
+            # If drawtext not available, skip captions
+            logger.warning(f"Captions failed (drawtext filter missing): {e}")
+            import shutil
+            shutil.copy2(input_path, output_path)
+
     def _merge_video_audio(self, video_path: Path, audio_path: Path, output_path: Path, duration: float) -> None:
         """Merge Kling video with voiceover, trimming to audio length."""
         cmd = [
@@ -169,10 +228,15 @@ class Orchestrator:
                     for p in clip_paths:
                         p.unlink(missing_ok=True)
 
-                # Step 4: Merge video + audio
-                logger.info("[4/4] Merging video + audio...")
+                # Step 4: Merge video + audio + captions
+                logger.info("[4/4] Merging video + audio + captions...")
+                merged_path = output_dir / f"merged_{i:02d}.mp4"
                 final_path = output_dir / f"final_{i:02d}.mp4"
-                self._merge_video_audio(kling_path, audio_path, final_path, audio_duration)
+                self._merge_video_audio(kling_path, audio_path, merged_path, audio_duration)
+
+                # Add captions (word-by-word, Instagram/TikTok style)
+                self._add_captions(merged_path, final_path, thought.text, audio_duration)
+                merged_path.unlink(missing_ok=True)
 
                 # Send to Telegram for approval
                 title = thought.hook_text
