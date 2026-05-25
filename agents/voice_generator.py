@@ -44,6 +44,9 @@ class VoiceGenerator:
         text = re.sub(r'\[PAUSE \d+\.?\d*s\]', '...', text)
         text = re.sub(r'\s+', ' ', text).strip()
         text = text.replace('... ...', '...')
+        # Add trailing pause to signal natural wind-down at the end
+        if not text.endswith('...'):
+            text = text.rstrip('.!?') + '...'
         return text
 
     @retry(max_attempts=3, base_delay=5.0)

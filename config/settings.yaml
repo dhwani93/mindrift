@@ -26,10 +26,10 @@ content:
 voice:
   voice_id: "GsfuR3Wo2BACoxELWyEF"
   model_id: "eleven_turbo_v2_5"
-  stability: 0.50
+  stability: 0.60              # Higher stability = calmer endings
   similarity_boost: 0.80
-  style: 0.45
-  speed_multiplier: 1.18       # Speed up narration for TikTok-style pacing
+  style: 0.30                  # Lower style = less uniform excitement, more natural dynamics
+  speed_multiplier: 1.18
 
 video:
   resolution: "1080x1920"    # Vertical 9:16 for Shorts/Reels/TikTok
