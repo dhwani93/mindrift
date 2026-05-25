@@ -51,12 +51,13 @@ class Orchestrator:
         ]
         self._run_ffmpeg(cmd, "merge_video_audio")
 
-    def run_daily(self, run_date: str | None = None, dry_run: bool = False, count: int = 1) -> dict:
+    def run_daily(self, run_date: str | None = None, dry_run: bool = False, auto_upload: bool = False, count: int = 1) -> dict:
         """Generate and upload what-if videos.
 
         Args:
             run_date: Date string.
             dry_run: Skip upload if True.
+            auto_upload: Skip Telegram approval, upload directly.
             count: Number of videos to produce.
         """
         run_date = run_date or date.today().isoformat()
@@ -181,6 +182,19 @@ class Orchestrator:
 
                 if dry_run:
                     logger.info(f"  [DRY RUN] Would upload: '{title}'")
+                elif auto_upload:
+                    # Upload directly without approval
+                    logger.info(f"  Auto-uploading: '{title}'")
+                    uploader.run(
+                        long_form_path=final_path,
+                        short_paths=[],
+                        title=title,
+                        description=description,
+                        tags=tags,
+                        thumbnail_path=final_path,
+                        dry_run=False,
+                    )
+                    telegram.send_message(f"✅ Auto-uploaded: {title} ({audio_duration:.0f}s)")
                 else:
                     # Send video to Telegram and wait for approval
                     logger.info("  Sending video for approval on Telegram...")

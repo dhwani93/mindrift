@@ -48,6 +48,11 @@ def main():
         action="store_true",
         help="Run full pipeline but skip YouTube upload",
     )
+    parser.add_argument(
+        "--auto-upload",
+        action="store_true",
+        help="Skip Telegram approval, upload directly",
+    )
     args = parser.parse_args()
 
     setup_logging(args.date)
@@ -57,7 +62,7 @@ def main():
     from agents.orchestrator import Orchestrator
 
     orchestrator = Orchestrator()
-    summary = orchestrator.run_daily(run_date=args.date, dry_run=args.dry_run)
+    summary = orchestrator.run_daily(run_date=args.date, dry_run=args.dry_run, auto_upload=args.auto_upload)
 
     # Exit with appropriate code
     if summary["status"] == "success":

@@ -21,5 +21,8 @@ python-dotenv>=1.0.0
 # HTTP
 requests>=2.31.0
 
+# Auth
+PyJWT>=2.8.0
+
 # MCP Server SDK
 mcp>=1.0.0

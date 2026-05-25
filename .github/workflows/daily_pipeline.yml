@@ -1,4 +1,4 @@
-name: The Hollow Hour — Daily Pipeline
+name: Mindrift — Daily Pipeline
 
 on:
   schedule:
@@ -58,7 +58,7 @@ jobs:
 
       - name: Run pipeline
         env:
-          CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           KLING_API_KEY: ${{ secrets.KLING_API_KEY }}
@@ -68,7 +68,7 @@ jobs:
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
-        run: python3 main.py --date $(date +%Y-%m-%d)
+        run: python3 main.py --date $(date +%Y-%m-%d) --auto-upload
 
       - name: Upload output on failure
         if: failure()
