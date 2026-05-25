@@ -48,19 +48,39 @@ OUTPUT FORMAT — respond with valid JSON:
 {
   "thought": "The voiceover text (1-2 sentences for short, 2-3 for long)",
   "visual_scenes": [
-    "Scene 1 prompt for Kling AI (5-10 seconds). RULES: Start with CAMERA MOVEMENT (slow dolly forward, crane shot rising, tracking shot). Describe ONE clear scene with MOTION (particles, water, light, transformation). Include LIGHTING (volumetric fog, golden hour, bioluminescent). End with STYLE (cinematic, photorealistic, 8K, anamorphic). MUST be filmable, not abstract.",
-    "Scene 2 prompt — a DIFFERENT angle or the next beat of the visual story. Same rules.",
-    "Scene 3 prompt (optional) — the reveal shot or final wide establishing shot."
+    "SCENE 1 PROMPT (see rules below)",
+    "SCENE 2 PROMPT",
+    "SCENE 3 PROMPT (optional)"
   ],
   "hook_text": "2-5 word text overlay (the scroll-stopper)",
   "category": "time_travel|alternate_history|parallel_universe|simulation|quantum|cosmic"
 }
 
-IMPORTANT: Generate 2-3 visual_scenes that tell a visual STORY matching the thought.
-- Scene 1: The establishing/approach shot
-- Scene 2: The reveal/closer look
-- Scene 3 (if needed): The pull-back or consequence shot
-Each scene = one 5-second Kling video clip. They will be stitched together to cover the voiceover.
+VISUAL SCENE PROMPT RULES — THIS IS CRITICAL:
+Kling AI is a video generator that creates EXACTLY what you describe. It does NOT understand concepts, metaphors, or implications. You must describe the LITERAL visual frame like you're directing a cinematographer.
+
+RULES FOR EACH SCENE PROMPT:
+1. Start with camera: "Slow aerial drone shot over...", "Close-up tracking shot of...", "First-person POV walking through..."
+2. Describe EXACTLY what is visible: real objects, textures, colors, materials. NOT concepts.
+3. Include motion: what is MOVING in frame (snow falling, lights flickering, water dripping, smoke rising)
+4. Include environment details: time of day, weather, materials (stone, metal, glass, ice)
+5. End with: "cinematic, photorealistic, 4K, shallow depth of field"
+
+GOOD KLING PROMPTS:
+- "Slow aerial drone shot flying over snow-covered Himalayan mountain peaks at golden hour, camera descends into a deep crevasse between two peaks revealing a massive carved stone doorway with glowing blue symbols etched into the rock face, snow particles blowing across the frame, warm golden sunlight hitting the mountain tops while blue light emanates from below, cinematic photorealistic 4K"
+- "Close-up shot of an ancient stone wall covered in moss and carved symbols, camera slowly pans right revealing a corridor stretching deep underground, torches with blue flames line the walls, water droplets fall from the ceiling catching the light, dust particles float in the air, cinematic photorealistic shallow depth of field"
+- "Wide shot of a massive underground lake reflecting thousands of bioluminescent lights from a city built into the cavern ceiling above, stone bridges connect floating platforms, tiny figures in robes walk across the bridges, gentle ripples on the water surface, volumetric light rays streaming from openings in the rock above, cinematic 4K photorealistic"
+
+BAD KLING PROMPTS:
+- "A hidden civilization beneath mountains" (TOO VAGUE — what does it look like??)
+- "The concept of parallel timelines merging" (ABSTRACT — Kling can't film a concept)
+- "An alternate history where Germany won" (WHAT DOES THAT LOOK LIKE? Describe the actual scene!)
+- "Massive underground cavern with golden spires" (Vague — what material? What shape? What's the camera doing?)
+
+Each scene = one 5-second Kling video clip. Generate 2-3 scenes that show a visual journey:
+- Scene 1: The approach/exterior (what you see from outside)
+- Scene 2: The discovery/entry (going inside, the first reveal)
+- Scene 3: The full reveal (the grand visual payoff)
 
 Generate 1 thought. Make it SPECIFIC, VISUAL, and MIND-BENDING."""
 
