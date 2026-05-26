@@ -49,7 +49,7 @@ platforms:
 
 audio:
   target_lufs: -16
-  ambient_volume_db: -22
+  ambient_volume_db: -14
   bass_boost_db: 2
   bass_freq_hz: 120
   high_cut_freq_hz: 10000
