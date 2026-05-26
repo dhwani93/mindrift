@@ -2,10 +2,10 @@ name: Mindrift — Daily Pipeline
 
 on:
   schedule:
-    # Reminder at 1 PM UTC (9 AM EST)
-    - cron: '0 13 * * *'
-    # Pipeline at 2 PM UTC (10 AM EST) — gives 1hr to respond
-    - cron: '0 14 * * *'
+    # Reminder at 5 PM UTC (9 AM PST)
+    - cron: '0 17 * * *'
+    # Pipeline at 8 PM UTC (12 PM PST) — gives 3hrs to respond
+    - cron: '0 20 * * *'
   workflow_dispatch:
     inputs:
       thought_seed:
@@ -41,15 +41,15 @@ jobs:
       - name: Initialize database
         run: python3 data/init_db.py
 
-      - name: Send daily reminder (only at 1PM UTC)
-        if: github.event.schedule == '0 13 * * *'
+      - name: Send daily reminder (only at 5PM UTC / 9AM PST)
+        if: github.event.schedule == '0 17 * * *'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python3 -c "from utils.telegram_bot import TelegramBot; TelegramBot().send_reminder()"
 
       - name: Exit if reminder-only run
-        if: github.event.schedule == '0 13 * * *'
+        if: github.event.schedule == '0 17 * * *'
         run: exit 0
 
       - name: Write seed from workflow input
