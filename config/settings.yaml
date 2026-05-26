@@ -29,7 +29,7 @@ voice:
   stability: 0.60              # Higher stability = calmer endings
   similarity_boost: 0.80
   style: 0.30                  # Lower style = less uniform excitement, more natural dynamics
-  speed_multiplier: 1.18
+  speed_multiplier: 1.05
 
 video:
   resolution: "1080x1920"    # Vertical 9:16 for Shorts/Reels/TikTok
