@@ -19,8 +19,7 @@ content:
     friday: original
     saturday: true_crime_curated
     sunday: original
-  parts_per_story: 3          # Split each story into 3 parts
-  words_per_part: 120         # ~45-60 seconds after speed-up
+  max_words: 40               # ~20 seconds at natural pace
   max_video_duration_sec: 20  # Hard cap — 20 seconds max
 
 voice:
