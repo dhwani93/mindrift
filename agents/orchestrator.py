@@ -1,4 +1,4 @@
-"""Orchestrator — simple pipeline for What-If short-form videos."""
+"""Orchestrator — pipeline for Mindrift short-form videos."""
 
 import logging
 import re
@@ -20,7 +20,7 @@ CONFIG_PATH = Path(__file__).parent.parent / "config" / "settings.yaml"
 
 
 class Orchestrator:
-    """Pipeline: thought → voice → kling video → merge → upload."""
+    """Pipeline: thought → voice → Kling video → merge → Telegram approval → upload."""
 
     def __init__(self, output_base: Path | None = None):
         with open(CONFIG_PATH) as f:
@@ -33,25 +33,26 @@ class Orchestrator:
             raise RuntimeError(f"FFmpeg failed ({description}): {result.stderr[-200:]}")
 
     def _add_captions(self, input_path: Path, output_path: Path, text: str, duration: float) -> None:
-        """Add word-by-word captions in Instagram/TikTok style.
+        """Add word-by-word captions in TikTok/Reels style.
 
-        Shows 3-4 words at a time, centered, large white text with black outline.
+        Shows 3 words at a time, large white text with thick black outline,
+        centered at 75% height.
         """
-        import re
-        # Clean text
         clean = re.sub(r'\[.*?\]', '', text).strip()
         words = clean.split()
 
-        # Group into chunks of 3-4 words
         chunk_size = 3
         chunks = []
         for j in range(0, len(words), chunk_size):
             chunks.append(" ".join(words[j:j + chunk_size]))
 
-        # Calculate timing per chunk
-        time_per_chunk = duration / len(chunks) if chunks else duration
+        if not chunks:
+            import shutil
+            shutil.copy2(input_path, output_path)
+            return
 
-        # Build FFmpeg drawtext filter chain
+        time_per_chunk = duration / len(chunks)
+
         filters = []
         for idx, chunk in enumerate(chunks):
             start = idx * time_per_chunk
@@ -64,59 +65,42 @@ class Orchestrator:
                 f":enable='between(t,{start:.2f},{end:.2f})'"
             )
 
-        if not filters:
-            import shutil
-            shutil.copy2(input_path, output_path)
-            return
-
-        filter_str = ",".join(filters)
-
         cmd = [
             "ffmpeg", "-y",
             "-i", str(input_path),
-            "-vf", filter_str,
-            "-c:v", "libx264",
-            "-preset", "fast",
-            "-crf", "23",
-            "-c:a", "copy",
-            "-pix_fmt", "yuv420p",
+            "-vf", ",".join(filters),
+            "-c:v", "libx264", "-preset", "fast", "-crf", "23",
+            "-c:a", "copy", "-pix_fmt", "yuv420p",
             str(output_path),
         ]
 
         try:
             self._run_ffmpeg(cmd, "add_captions")
         except RuntimeError as e:
-            # If drawtext not available, skip captions
-            logger.warning(f"Captions failed (drawtext filter missing): {e}")
+            logger.warning(f"Captions failed (drawtext missing): {e}")
             import shutil
             shutil.copy2(input_path, output_path)
 
     def _merge_video_audio(self, video_path: Path, audio_path: Path, output_path: Path, duration: float) -> None:
-        """Merge Kling video with voiceover, trimming to audio length."""
+        """Merge Kling video with voiceover, trimming to exact audio length."""
         cmd = [
             "ffmpeg", "-y",
             "-i", str(video_path),
             "-i", str(audio_path),
             "-t", str(duration),
-            "-c:v", "libx264",
-            "-preset", "fast",
-            "-crf", "23",
-            "-c:a", "aac",
-            "-b:a", "192k",
-            "-pix_fmt", "yuv420p",
-            # Scale to 1080x1920 if not already
+            "-c:v", "libx264", "-preset", "fast", "-crf", "23",
+            "-c:a", "aac", "-b:a", "192k", "-pix_fmt", "yuv420p",
             "-vf", "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2",
             str(output_path),
         ]
         self._run_ffmpeg(cmd, "merge_video_audio")
 
-    def run_daily(self, run_date: str | None = None, dry_run: bool = False, auto_upload: bool = False, count: int = 1) -> dict:
-        """Generate and upload what-if videos.
+    def run_daily(self, run_date: str | None = None, dry_run: bool = False, count: int = 1) -> dict:
+        """Generate and upload a Mindrift video.
 
         Args:
-            run_date: Date string.
-            dry_run: Skip upload if True.
-            auto_upload: Skip Telegram approval, upload directly.
+            run_date: Date string (YYYY-MM-DD). Defaults to today.
+            dry_run: If True, generate video but skip upload and approval.
             count: Number of videos to produce.
         """
         run_date = run_date or date.today().isoformat()
@@ -126,8 +110,8 @@ class Orchestrator:
         summary = {"date": run_date, "status": "started", "videos": []}
 
         logger.info(f"{'=' * 50}")
-        logger.info(f"WHAT IF — Daily Pipeline | {run_date}")
-        logger.info(f"Videos to produce: {count} | Dry run: {dry_run}")
+        logger.info(f"MINDRIFT — Daily Pipeline | {run_date}")
+        logger.info(f"Videos: {count} | Dry run: {dry_run}")
         logger.info(f"{'=' * 50}")
 
         try:
@@ -135,16 +119,16 @@ class Orchestrator:
             voice_gen = VoiceGenerator()
             kling = KlingVideoGenerator()
             uploader = YouTubeUploader()
+            telegram = TelegramBot()
 
             for i in range(count):
                 logger.info(f"\n--- Video {i + 1}/{count} ---")
 
-                # Step 1: Generate thought (check Telegram → file → auto-generate)
-                logger.info("[1/4] Generating thought...")
-                telegram = TelegramBot()
+                # === STEP 1: Get thought seed ===
+                logger.info("[1/5] Getting thought seed...")
 
-                # Check Telegram for a seed from user
-                user_seed = telegram.get_latest_message(max_age_hours=24) or ""
+                # Check Telegram for user's seed (within last 3 hours = since reminder)
+                user_seed = telegram.get_latest_message(max_age_hours=3) or ""
 
                 # Fallback: check seed file
                 if not user_seed:
@@ -154,22 +138,21 @@ class Orchestrator:
                         if user_seed:
                             seed_file.write_text("")
 
-                # Check if user wants a longer video
+                # Parse "long" modifier
                 make_long = False
                 if user_seed:
                     if "long" in user_seed.lower():
                         make_long = True
                         user_seed = user_seed.lower().replace("long", "").strip(" -,.")
-                    logger.info(f"  Using seed: {user_seed[:60]}... ({'long' if make_long else 'short'})")
+                    logger.info(f"  Seed: {user_seed[:60]}... ({'long' if make_long else 'short'})")
                     thought = thought_gen.run(category_hint=user_seed, long_form=make_long)
                 else:
+                    logger.info("  No seed — auto-generating")
                     thought = thought_gen.run()
 
-                # Step 2: Generate voiceover
-                logger.info("[2/4] Generating voiceover...")
-                voice_text = thought.text
-                # Clean for TTS
-                clean_text = re.sub(r'\[.*?\]', '', voice_text).strip()
+                # === STEP 2: Generate voiceover ===
+                logger.info("[2/5] Generating voiceover...")
+                clean_text = re.sub(r'\[.*?\]', '', thought.text).strip()
 
                 audio_path = output_dir / f"voice_{i:02d}.wav"
                 raw_path = output_dir / f"voice_{i:02d}_raw.mp3"
@@ -177,12 +160,10 @@ class Orchestrator:
                 voice_gen._generate_audio(clean_text, raw_path)
 
                 from utils.audio_processing import process_narration
-                speed = self.config["voice"].get("speed_multiplier", 1.0)
-                ambient_path = voice_gen._pick_ambient_track()
                 process_narration(
                     raw_audio_path=raw_path,
                     output_path=audio_path,
-                    ambient_path=ambient_path,
+                    ambient_path=voice_gen._pick_ambient_track(),
                     target_lufs=self.config["audio"]["target_lufs"],
                     bass_boost_db=self.config["audio"]["bass_boost_db"],
                     bass_freq=self.config["audio"]["bass_freq_hz"],
@@ -190,84 +171,72 @@ class Orchestrator:
                     compression_threshold=self.config["audio"]["compression_threshold_db"],
                     compression_ratio=self.config["audio"]["compression_ratio"],
                     ambient_volume_db=self.config["audio"]["ambient_volume_db"],
-                    speed_multiplier=speed,
+                    speed_multiplier=self.config["voice"].get("speed_multiplier", 1.0),
                 )
 
-                # Get audio duration
                 from pydub import AudioSegment
-                audio = AudioSegment.from_file(audio_path)
-                audio_duration = len(audio) / 1000.0
+                audio_duration = len(AudioSegment.from_file(audio_path)) / 1000.0
                 logger.info(f"  Voice: {audio_duration:.1f}s")
 
-                # Step 3: Generate Kling video clips (one per visual scene)
-                logger.info(f"[3/4] Generating {len(thought.visual_scenes)} Kling clips...")
-                kling_path = output_dir / f"kling_{i:02d}.mp4"
-
-                # Calculate duration per clip to cover audio
+                # === STEP 3: Generate Kling video clips ===
                 num_scenes = len(thought.visual_scenes) or 1
-                secs_per_clip = min(10, max(5, int(audio_duration / num_scenes) + 1))
+                logger.info(f"[3/5] Generating {num_scenes} Kling video clips...")
+                video_path = output_dir / f"video_{i:02d}.mp4"
+
+                # Each clip should be long enough that total covers audio
+                secs_per_clip = min(10, max(5, int(audio_duration / num_scenes) + 2))
 
                 clip_paths = []
                 for s_idx, scene_prompt in enumerate(thought.visual_scenes):
-                    clip_path = output_dir / f"kling_{i:02d}_scene_{s_idx}.mp4"
-                    logger.info(f"  Scene {s_idx + 1}/{num_scenes}: {scene_prompt[:60]}...")
+                    clip_path = output_dir / f"clip_{i:02d}_s{s_idx}.mp4"
+                    logger.info(f"  Scene {s_idx + 1}/{num_scenes}: {scene_prompt[:80]}...")
                     kling.generate(scene_prompt, clip_path, duration=secs_per_clip)
                     clip_paths.append(clip_path)
 
-                # Stitch all clips together
+                # Stitch clips
                 if len(clip_paths) == 1:
-                    clip_paths[0].rename(kling_path)
-                else:
+                    clip_paths[0].rename(video_path)
+                elif clip_paths:
                     concat_file = output_dir / f"concat_{i:02d}.txt"
                     concat_file.write_text("".join(f"file '{p}'\n" for p in clip_paths))
                     subprocess.run([
                         "ffmpeg", "-y", "-f", "concat", "-safe", "0",
-                        "-i", str(concat_file), "-c", "copy", str(kling_path)
+                        "-i", str(concat_file), "-c", "copy", str(video_path)
                     ], capture_output=True)
                     concat_file.unlink()
                     for p in clip_paths:
                         p.unlink(missing_ok=True)
 
-                # Step 4: Merge video + audio + captions
-                logger.info("[4/4] Merging video + audio + captions...")
+                # === STEP 4: Merge video + audio + captions ===
+                logger.info("[4/5] Merging video + audio + captions...")
                 merged_path = output_dir / f"merged_{i:02d}.mp4"
                 final_path = output_dir / f"final_{i:02d}.mp4"
-                self._merge_video_audio(kling_path, audio_path, merged_path, audio_duration)
-
-                # Add captions (word-by-word, Instagram/TikTok style)
+                self._merge_video_audio(video_path, audio_path, merged_path, audio_duration)
                 self._add_captions(merged_path, final_path, thought.text, audio_duration)
                 merged_path.unlink(missing_ok=True)
 
-                # Send to Telegram for approval
+                # === STEP 5: Telegram approval → Upload ===
                 title = thought.hook_text
-                description = f"{thought.text}\n\n#shorts #whatif #scifi #mindblown #paralleluniverse"
+                description = f"{thought.text}\n\n#shorts #whatif #scifi #mindblown #paralleluniverse #mindrift"
                 tags = ["what if", "mind bending", "sci-fi", "time travel", "parallel universe",
-                        "alternate history", "simulation theory", "shorts"]
+                        "alternate history", "simulation theory", "shorts", "mindrift"]
 
                 if dry_run:
-                    logger.info(f"  [DRY RUN] Would upload: '{title}'")
-                elif auto_upload:
-                    # Upload directly without approval
-                    logger.info(f"  Auto-uploading: '{title}'")
-                    uploader.run(
-                        long_form_path=final_path,
-                        short_paths=[],
-                        title=title,
-                        description=description,
-                        tags=tags,
-                        thumbnail_path=final_path,
-                        dry_run=False,
-                    )
-                    telegram.send_message(f"✅ Auto-uploaded: {title} ({audio_duration:.0f}s)")
+                    logger.info(f"  [DRY RUN] Would send for approval: '{title}'")
                 else:
                     # Send video to Telegram and wait for approval
-                    logger.info("  Sending video for approval on Telegram...")
-                    telegram.send_video_for_approval(str(final_path), thought.text, audio_duration)
+                    logger.info("[5/5] Sending video for approval on Telegram...")
+                    sent = telegram.send_video_for_approval(str(final_path), thought.text, audio_duration)
+
+                    if not sent:
+                        logger.error("  Failed to send video to Telegram")
+                        telegram.send_message(f"⚠️ Video generated but couldn't send for preview. Title: {title}")
+                        continue
 
                     approval = telegram.wait_for_approval(timeout_minutes=30)
 
-                    if approval:
-                        logger.info("  Approved! Uploading...")
+                    if approval is True:
+                        logger.info("  ✅ Approved! Uploading to YouTube...")
                         uploader.run(
                             long_form_path=final_path,
                             short_paths=[],
@@ -277,8 +246,11 @@ class Orchestrator:
                             thumbnail_path=final_path,
                             dry_run=False,
                         )
+                        telegram.send_completion(title, audio_duration)
+                    elif approval is False:
+                        logger.info("  ❌ Rejected. Skipping upload.")
                     else:
-                        logger.info("  Rejected or timed out. Skipping upload.")
+                        logger.info("  ⏰ No response within 30 min. Skipping upload.")
 
                 summary["videos"].append({
                     "thought": thought.text[:80],
@@ -294,6 +266,11 @@ class Orchestrator:
             logger.error(f"Pipeline failed: {e}", exc_info=True)
             summary["status"] = "failed"
             summary["error"] = str(e)
+            # Notify on failure
+            try:
+                TelegramBot().send_message(f"❌ Pipeline failed: {str(e)[:200]}")
+            except Exception:
+                pass
 
         logger.info(f"\n{'=' * 50}")
         logger.info(f"Pipeline: {summary['status']} | {len(summary['videos'])} videos")

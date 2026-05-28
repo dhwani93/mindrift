@@ -2,10 +2,10 @@ name: Mindrift — Daily Pipeline
 
 on:
   schedule:
-    # Reminder at 5 PM UTC (9 AM PST)
-    - cron: '0 17 * * *'
-    # Pipeline at 8 PM UTC (12 PM PST) — gives 3hrs to respond
-    - cron: '0 20 * * *'
+    # Reminder at 4 PM UTC (9 AM PDT / California)
+    - cron: '0 16 * * *'
+    # Pipeline at 7 PM UTC (12 PM PDT / California) — 3hr gap for seed
+    - cron: '0 19 * * *'
   workflow_dispatch:
     inputs:
       thought_seed:
@@ -16,13 +16,13 @@ on:
 jobs:
   produce:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60  # Extra time for Kling generation + 30min approval wait
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          lfs: true  # Pull assets from Git LFS
+          lfs: true
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -41,17 +41,19 @@ jobs:
       - name: Initialize database
         run: python3 data/init_db.py
 
-      - name: Send daily reminder (only at 5PM UTC / 9AM PST)
-        if: github.event.schedule == '0 17 * * *'
+      # --- REMINDER ONLY (9 AM PDT) ---
+      - name: Send daily reminder
+        if: github.event.schedule == '0 16 * * *'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python3 -c "from utils.telegram_bot import TelegramBot; TelegramBot().send_reminder()"
 
-      - name: Exit if reminder-only run
-        if: github.event.schedule == '0 17 * * *'
+      - name: Exit after reminder
+        if: github.event.schedule == '0 16 * * *'
         run: exit 0
 
+      # --- PIPELINE RUN (12 PM PDT) ---
       - name: Write seed from workflow input
         if: inputs.thought_seed != ''
         run: echo "${{ inputs.thought_seed }}" > data/daily_seed.txt
@@ -68,7 +70,7 @@ jobs:
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
-        run: python3 main.py --date $(date +%Y-%m-%d) --auto-upload
+        run: python3 main.py --date $(date +%Y-%m-%d)
 
       - name: Upload output on failure
         if: failure()
@@ -82,6 +84,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pipeline-log-$(date +%Y-%m-%d)
+          name: pipeline-log-${{ github.run_id }}
           path: output/*/pipeline.log
           retention-days: 30

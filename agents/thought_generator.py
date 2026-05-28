@@ -32,17 +32,27 @@ THEME FOCUS:
 - What if a historical event went differently and created a wildly different present
 - What exists in places humans can't go (deep ocean trenches, inside black holes, before the Big Bang)
 
-GOOD examples:
-- "What if there's a civilization beneath the Himalayas that's been watching us for 10,000 years, waiting for us to be ready"
-- "There might be a version of you in a parallel universe who made every opposite choice — and they're wondering about you too"
-- "What if the Sahara Desert is covering an ancient city so advanced, it makes our technology look like cave paintings"
-- "What if the deepest part of the ocean has a city that's been lit up for millions of years — and we just can't get deep enough to see the lights"
-- "What if every ancient temple was built on top of a portal, and the people who built them knew exactly what was underneath"
+OPENING STYLE — DO NOT always start with "What if." Vary the opening:
+- Statement: "There's a civilization beneath the Himalayas that's been watching us for 10,000 years."
+- Question: "Ever wonder why every ancient culture built pyramids? They weren't tombs."
+- Reveal: "In 1954, the US Navy mapped something under Antarctica. The files were classified for 70 years."
+- Second person: "Right now, a version of you in another universe just made the opposite choice — and they're wondering about you too."
+- Declarative: "The Sahara Desert is hiding an ancient city so advanced, it makes our technology look like cave paintings."
 
-BAD examples (too generic):
-- "What if we're in a simulation" (overdone, not visual)
-- "What if aliens exist" (too vague)
+Mix it up. "What if" is fine sometimes, but not every time.
+
+GOOD examples:
+- "There's a civilization beneath the Himalayas that's been watching us for 10,000 years, waiting for us to be ready."
+- "Right now, another version of you just made every opposite choice — and they're wondering about you too."
+- "The Sahara Desert is covering an ancient city so advanced it makes our technology look like cave paintings."
+- "The deepest part of the ocean has lights. We just can't get deep enough to see them yet."
+- "Every ancient temple was built on top of something. The builders knew exactly what was underneath."
+
+BAD examples:
+- "What if we're in a simulation" (overdone, vague, not visual)
+- "What if aliens exist" (too generic)
 - "What if time isn't real" (not specific, not cinematic)
+- Starting every thought with "What if" (repetitive, kills the vibe)
 
 OUTPUT FORMAT — respond with valid JSON:
 {
@@ -56,31 +66,61 @@ OUTPUT FORMAT — respond with valid JSON:
   "category": "time_travel|alternate_history|parallel_universe|simulation|quantum|cosmic"
 }
 
-VISUAL SCENE PROMPT RULES — THIS IS CRITICAL:
-Kling AI is a video generator that creates EXACTLY what you describe. It does NOT understand concepts, metaphors, or implications. You must describe the LITERAL visual frame like you're directing a cinematographer.
+VISUAL SCENE PROMPT RULES — READ THIS CAREFULLY:
 
-RULES FOR EACH SCENE PROMPT:
-1. Start with camera: "Slow aerial drone shot over...", "Close-up tracking shot of...", "First-person POV walking through..."
-2. Describe EXACTLY what is visible: real objects, textures, colors, materials. NOT concepts.
-3. Include motion: what is MOVING in frame (snow falling, lights flickering, water dripping, smoke rising)
-4. Include environment details: time of day, weather, materials (stone, metal, glass, ice)
-5. End with: "cinematic, photorealistic, 4K, shallow depth of field"
+You are writing prompts for Kling AI, a text-to-video generator. It renders EXACTLY what you describe — nothing more, nothing less. If you write vague or abstract prompts, you get garbage. You must describe the scene like a film director on set, telling the camera operator and set designer EXACTLY what to shoot.
 
-GOOD KLING PROMPTS:
-- "Slow aerial drone shot flying over snow-covered Himalayan mountain peaks at golden hour, camera descends into a deep crevasse between two peaks revealing a massive carved stone doorway with glowing blue symbols etched into the rock face, snow particles blowing across the frame, warm golden sunlight hitting the mountain tops while blue light emanates from below, cinematic photorealistic 4K"
-- "Close-up shot of an ancient stone wall covered in moss and carved symbols, camera slowly pans right revealing a corridor stretching deep underground, torches with blue flames line the walls, water droplets fall from the ceiling catching the light, dust particles float in the air, cinematic photorealistic shallow depth of field"
-- "Wide shot of a massive underground lake reflecting thousands of bioluminescent lights from a city built into the cavern ceiling above, stone bridges connect floating platforms, tiny figures in robes walk across the bridges, gentle ripples on the water surface, volumetric light rays streaming from openings in the rock above, cinematic 4K photorealistic"
+EVERY SCENE PROMPT MUST CONTAIN ALL 5 OF THESE:
 
-BAD KLING PROMPTS:
-- "A hidden civilization beneath mountains" (TOO VAGUE — what does it look like??)
-- "The concept of parallel timelines merging" (ABSTRACT — Kling can't film a concept)
-- "An alternate history where Germany won" (WHAT DOES THAT LOOK LIKE? Describe the actual scene!)
-- "Massive underground cavern with golden spires" (Vague — what material? What shape? What's the camera doing?)
+1. CAMERA — What the camera is doing. Not just "slow shot" — be precise:
+   GOOD: "Steadicam shot moving forward at walking pace through..."
+   GOOD: "Aerial drone descending at 45-degree angle toward..."
+   GOOD: "Extreme close-up, camera slowly pulling back to reveal..."
+   BAD: "A shot of..." (what kind of shot??)
 
-Each scene = one 5-second Kling video clip. Generate 2-3 scenes that show a visual journey:
-- Scene 1: The approach/exterior (what you see from outside)
-- Scene 2: The discovery/entry (going inside, the first reveal)
-- Scene 3: The full reveal (the grand visual payoff)
+2. SUBJECT — The main thing in frame. Describe it with materials, colors, scale, condition:
+   GOOD: "a 200-foot-tall stone gateway carved from black granite, covered in green moss, with golden Sanskrit-like symbols glowing faintly in the cracks"
+   GOOD: "a 1940s Berlin street with cobblestones, Nazi-era concrete buildings replaced by sleek chrome towers with red banners, vintage Mercedes cars alongside hovering vehicles"
+   BAD: "an ancient doorway" (what material? how big? what condition?)
+   BAD: "a futuristic city" (what does it actually look like??)
+
+3. MOTION — What is physically moving in the frame:
+   GOOD: "snow falling slowly, prayer flags fluttering in wind, blue light pulsing from within the gateway"
+   GOOD: "pedestrians in 1940s clothing walking on sidewalks, steam rising from street grates, headlights reflecting off wet cobblestones"
+   BAD: nothing moving = boring 5-second static image
+
+4. LIGHTING & ATMOSPHERE — Time of day, weather, light sources, mood:
+   GOOD: "overcast sky, last light of sunset behind the peaks, cold blue shadows on snow, warm amber light from torches inside the cave"
+   GOOD: "night scene, neon signs in German reflecting on rain-soaked streets, fog rolling at ground level, harsh spotlight beams from watchtowers"
+   BAD: "dark and moody" (what light source? what time of day?)
+
+5. QUALITY TAGS — Always end with: "cinematic photorealistic 4K, shallow depth of field, film grain"
+
+EXAMPLE PROMPTS THAT WILL PRODUCE GOOD KLING VIDEO:
+
+For "hidden city under the Himalayas":
+- Scene 1: "Aerial drone shot flying low over the snow-covered peaks of the Annapurna range in Nepal at golden hour, camera tilts downward revealing a massive crack in the mountainside between two glaciers, the crack glows with faint turquoise light from deep within, snow particles blowing horizontally across the frame, golden sunlight on the peaks contrasting with the blue glow below, clouds drifting past the peaks, cinematic photorealistic 4K film grain"
+- Scene 2: "Steadicam shot moving forward through a narrow cave tunnel carved from dark gray rock, walls covered in intricate geometric carvings filled with faintly glowing cyan crystals, water droplets falling from stalactites catching the crystal light, the tunnel opens wider ahead revealing a warm golden glow, camera pushes forward toward the light, dust particles floating in the air, cinematic photorealistic shallow depth of field"
+- Scene 3: "Wide establishing shot revealing a vast underground cavern the size of a city, hundreds of tiered stone buildings carved directly into the cavern walls, connected by rope bridges and stone walkways, a massive natural skylight in the cavern ceiling letting in a single beam of golden sunlight that illuminates the central plaza, waterfalls cascading down the cavern walls into pools below, tiny figures in white robes walking on the bridges, bioluminescent moss covering the buildings giving them a soft green glow, mist hanging in the air, cinematic photorealistic 4K shallow depth of field"
+
+For "what if Germany won WW2":
+- Scene 1: "Dolly shot moving forward along a grand boulevard in 1960s Berlin, the Brandenburg Gate visible in the distance now rebuilt three times larger in white marble with massive eagle statues on top, towering brutalist concrete government buildings line both sides of the street, red and black banners hanging from every building, vintage 1960s cars and military vehicles on the road, pedestrians in formal gray coats walking on wide sidewalks, overcast sky, wet pavement reflecting the buildings, cinematic photorealistic 4K film grain"
+- Scene 2: "Low angle tracking shot looking up at a massive rocket launchpad in a desert, a V-series rocket with swastika markings and 'LUNAR PROGRAM' written on the side stands ready for launch, steam venting from the base, searchlights cutting through the night sky, hundreds of engineers in white coats watching from observation bunkers, the rocket engines ignite with orange and white flames, camera shakes slightly, cinematic photorealistic 4K"
+
+For "parallel version of you":
+- Scene 1: "Close-up of a person's face looking into a bathroom mirror in a dimly lit apartment at 2 AM, tired eyes with dark circles, the reflection stares back but with subtle differences — slightly different haircut, a scar that isn't there in reality, the reflection blinks half a second late, bathroom tiles visible behind, single bulb flickering overhead, water droplet rolling down the mirror surface, cinematic photorealistic shallow depth of field"
+
+BAD PROMPTS THAT PRODUCE GARBAGE:
+- "A hidden civilization" → WHAT DOES IT LOOK LIKE?? What buildings? What materials?
+- "Alternate history Berlin" → DESCRIBE THE ACTUAL STREET. What buildings, vehicles, people?
+- "Underground city with lights" → What KIND of lights? Torches? Crystals? Neon? Bioluminescent? HOW BIG is the city? What are the buildings MADE OF?
+- "Futuristic technology" → WHAT TECHNOLOGY? A hologram? A hovering car? A neural interface? Be SPECIFIC.
+- "The concept of time" → Kling CANNOT film concepts. Describe a PHYSICAL SCENE.
+
+Each scene = one 5-10 second Kling video clip. Generate 2-3 scenes that create a visual journey:
+- Scene 1: The approach — what you see from the outside, the first hint something is different
+- Scene 2: The discovery — going closer/inside, the reveal that changes everything
+- Scene 3: The full payoff — the grand visual that makes the viewer's jaw drop
 
 Generate 1 thought. Make it SPECIFIC, VISUAL, and MIND-BENDING."""
 
