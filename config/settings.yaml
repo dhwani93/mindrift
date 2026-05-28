@@ -23,7 +23,7 @@ content:
   max_video_duration_sec: 20  # Hard cap — 20 seconds max
 
 voice:
-  voice_id: "GsfuR3Wo2BACoxELWyEF"
+  voice_id: "JBFqnCBsd6RMkjVDRZzb"  # George - Warm, Captivating Storyteller
   model_id: "eleven_turbo_v2_5"
   stability: 0.60              # Higher stability = calmer endings
   similarity_boost: 0.80
