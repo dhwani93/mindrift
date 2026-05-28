@@ -119,7 +119,18 @@ VOICEOVER CONTEXT: "{thought_text}"
 ROUGH SCENES:
 {scenes_text}
 
-Take each scene and make it 10x more detailed. Describe every material, texture, light source, color, movement. Build the world like you're directing a VFX team. 150-250 words per scene. JSON only."""
+MANDATORY — EVERY scene MUST start with a camera direction line in this exact format:
+"[CAMERA TYPE] at [HEIGHT/ANGLE], moving [DIRECTION] at [SPEED], [LENS]mm lens."
+
+Examples:
+"Steadicam at eye level (5.5ft), pushing forward at slow walking pace, 35mm wide lens."
+"Aerial drone at 200ft descending at 45-degree angle, sweeping left-to-right, 24mm ultra-wide lens."
+"Crane shot starting at ground level, rising vertically to 80ft, orbiting 90 degrees clockwise, 50mm lens."
+"Locked tripod at low angle (2ft), static with slow 10-degree upward tilt over 10 seconds, 85mm telephoto lens."
+
+After the camera line, describe EVERYTHING else: environment, materials, colors (with RGB), textures, motion layers (primary + secondary + ambient), lighting sources, atmospheric effects, particles, scale references.
+
+200-400 words per scene minimum. JSON only."""
 
         response = self.client.messages.create(
             model=self.model,
