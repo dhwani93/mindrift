@@ -175,7 +175,17 @@ class Orchestrator:
                 )
 
                 from pydub import AudioSegment
-                audio_duration = len(AudioSegment.from_file(audio_path)) / 1000.0
+                audio = AudioSegment.from_file(audio_path)
+                audio_duration = len(audio) / 1000.0
+
+                # Enforce 20-second hard cap
+                max_duration = self.config["content"].get("max_video_duration_sec", 20)
+                if audio_duration > max_duration:
+                    logger.warning(f"  Audio {audio_duration:.1f}s exceeds {max_duration}s cap, trimming")
+                    audio = audio[:max_duration * 1000].fade_out(500)
+                    audio.export(str(audio_path), format="wav")
+                    audio_duration = max_duration
+
                 logger.info(f"  Voice: {audio_duration:.1f}s")
 
                 # === STEP 3: Generate Kling video clips ===

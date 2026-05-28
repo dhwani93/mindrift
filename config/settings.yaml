@@ -21,7 +21,7 @@ content:
     sunday: original
   parts_per_story: 3          # Split each story into 3 parts
   words_per_part: 120         # ~45-60 seconds after speed-up
-  max_part_duration_sec: 60   # Hard cap — 60 seconds max per part
+  max_video_duration_sec: 20  # Hard cap — 20 seconds max
 
 voice:
   voice_id: "GsfuR3Wo2BACoxELWyEF"
@@ -29,7 +29,7 @@ voice:
   stability: 0.60              # Higher stability = calmer endings
   similarity_boost: 0.80
   style: 0.30                  # Lower style = less uniform excitement, more natural dynamics
-  speed_multiplier: 1.05
+  speed_multiplier: 1.0            # No speed-up, natural pace
 
 video:
   resolution: "1080x1920"    # Vertical 9:16 for Shorts/Reels/TikTok

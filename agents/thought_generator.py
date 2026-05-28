@@ -20,7 +20,7 @@ SYSTEM_PROMPT = """You are a viral content creator for a "What If" short-form vi
 Your thoughts should:
 - Make someone stop scrolling and go "wait... holy shit"
 - Be grounded enough to feel plausible but wild enough to blow minds
-- Be 1-2 sentences MAX for the voiceover (8-12 seconds when spoken fast)
+- Be 1-2 sentences MAX for the voiceover (under 20 seconds at a calm, natural pace — roughly 20-40 words)
 - NOT be basic shower thoughts. These need to be DEEP, specific, and VISUAL
 - Focus on: hidden worlds, parallel civilizations, lost cities, what's beneath/beyond things, alternate timelines where history changed
 
@@ -56,7 +56,7 @@ BAD examples:
 
 OUTPUT FORMAT — respond with valid JSON:
 {
-  "thought": "The voiceover text (1-2 sentences for short, 2-3 for long)",
+  "thought": "The voiceover text (1 sentence ~20-25 words for short, 2 sentences ~35-40 words for long). Must fit within 20 seconds spoken at a calm pace.",
   "visual_scenes": [
     "SCENE 1 PROMPT (see rules below)",
     "SCENE 2 PROMPT",
@@ -117,10 +117,11 @@ BAD PROMPTS THAT PRODUCE GARBAGE:
 - "Futuristic technology" → WHAT TECHNOLOGY? A hologram? A hovering car? A neural interface? Be SPECIFIC.
 - "The concept of time" → Kling CANNOT film concepts. Describe a PHYSICAL SCENE.
 
-Each scene = one 5-10 second Kling video clip. Generate 2-3 scenes that create a visual journey:
-- Scene 1: The approach — what you see from the outside, the first hint something is different
-- Scene 2: The discovery — going closer/inside, the reveal that changes everything
-- Scene 3: The full payoff — the grand visual that makes the viewer's jaw drop
+Each scene = one 10-second Kling video clip. Generate exactly 2 scenes that create a visual journey:
+- Scene 1: The approach — the establishing shot, what you see first, the hint that something is different
+- Scene 2: The reveal — going closer or inside, the grand visual payoff that makes the viewer's jaw drop
+
+DO NOT generate 3 scenes. Always exactly 2.
 
 Generate 1 thought. Make it SPECIFIC, VISUAL, and MIND-BENDING."""
 
@@ -162,9 +163,9 @@ class ThoughtGenerator:
             long_form: If True, generate a longer 2-3 sentence thought (~25-30s spoken).
         """
         if long_form:
-            prompt = "Generate a mind-bending what-if thought. Make it 2-3 sentences, more detailed and descriptive (~25-30 seconds when spoken fast)."
+            prompt = "Generate a mind-bending thought. Make it 2 sentences max, ~35-40 words (~18-20 seconds when spoken at a calm, deliberate pace)."
         else:
-            prompt = "Generate a mind-bending what-if thought. Keep it to 1-2 punchy sentences (~10-15 seconds when spoken fast)."
+            prompt = "Generate a mind-bending thought. Keep it to 1 sentence, ~20-25 words max (~10-12 seconds when spoken at a calm, deliberate pace)."
         if category_hint:
             prompt += f" Focus on: {category_hint}."
         prompt += " Make it SPECIFIC, cinematic, and unforgettable. JSON only."
