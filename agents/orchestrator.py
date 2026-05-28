@@ -8,6 +8,7 @@ from pathlib import Path
 
 import yaml
 
+from agents.kling_prompt_builder import KlingPromptBuilder
 from agents.kling_video import KlingVideoGenerator
 from agents.thought_generator import ThoughtGenerator
 from agents.uploader import YouTubeUploader
@@ -117,6 +118,7 @@ class Orchestrator:
         try:
             thought_gen = ThoughtGenerator()
             voice_gen = VoiceGenerator()
+            prompt_builder = KlingPromptBuilder()
             kling = KlingVideoGenerator()
             uploader = YouTubeUploader()
             telegram = TelegramBot()
@@ -188,16 +190,18 @@ class Orchestrator:
 
                 logger.info(f"  Voice: {audio_duration:.1f}s")
 
-                # === STEP 3: Generate Kling video clips ===
-                num_scenes = len(thought.visual_scenes) or 1
-                logger.info(f"[3/5] Generating {num_scenes} Kling video clips...")
+                # === STEP 3: Expand visual prompts + Generate Kling clips ===
+                logger.info("[3/5] Building detailed Kling prompts...")
+                detailed_prompts = prompt_builder.build_prompts(thought.text, thought.visual_scenes)
+
+                num_scenes = len(detailed_prompts)
+                logger.info(f"  Generating {num_scenes} Kling video clips...")
                 video_path = output_dir / f"video_{i:02d}.mp4"
 
-                # Each clip should be long enough that total covers audio
-                secs_per_clip = min(10, max(5, int(audio_duration / num_scenes) + 2))
+                secs_per_clip = 10  # Always 10s per clip
 
                 clip_paths = []
-                for s_idx, scene_prompt in enumerate(thought.visual_scenes):
+                for s_idx, scene_prompt in enumerate(detailed_prompts):
                     clip_path = output_dir / f"clip_{i:02d}_s{s_idx}.mp4"
                     logger.info(f"  Scene {s_idx + 1}/{num_scenes}: {scene_prompt[:80]}...")
                     kling.generate(scene_prompt, clip_path, duration=secs_per_clip)
