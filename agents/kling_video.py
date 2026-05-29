@@ -58,9 +58,16 @@ class KlingVideoGenerator:
         Returns:
             Task ID for polling.
         """
+        # Sanitize prompt: remove special chars, cap length
+        clean_prompt = prompt.replace("[", "").replace("]", "").replace("{", "").replace("}", "")
+        clean_prompt = clean_prompt.replace("\n", " ").replace("\r", " ")
+        clean_prompt = " ".join(clean_prompt.split())  # normalize whitespace
+        if len(clean_prompt) > 2000:
+            clean_prompt = clean_prompt[:2000].rsplit(" ", 1)[0]
+
         payload = {
             "model_name": "kling-v1",
-            "prompt": prompt,
+            "prompt": clean_prompt,
             "duration": str(duration),
             "aspect_ratio": "9:16",
             "mode": "std",
@@ -72,7 +79,9 @@ class KlingVideoGenerator:
             json=payload,
             timeout=30,
         )
-        response.raise_for_status()
+        if response.status_code != 200:
+            logger.error(f"Kling API error {response.status_code}: {response.text[:500]}")
+            response.raise_for_status()
         data = response.json()
 
         task_id = data.get("data", {}).get("task_id")
