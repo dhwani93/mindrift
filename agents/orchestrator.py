@@ -180,8 +180,18 @@ class Orchestrator:
                 audio = AudioSegment.from_file(audio_path)
                 audio_duration = len(audio) / 1000.0
 
-                # Enforce 20-second hard cap
+                # Enforce 15-20 second range
+                min_duration = 15
                 max_duration = self.config["content"].get("max_video_duration_sec", 20)
+
+                if audio_duration < min_duration:
+                    logger.warning(f"  Audio {audio_duration:.1f}s is under {min_duration}s, padding with silence")
+                    pad_ms = int((min_duration - audio_duration) * 1000)
+                    silence = AudioSegment.silent(duration=pad_ms)
+                    audio = audio + silence
+                    audio.export(str(audio_path), format="wav")
+                    audio_duration = min_duration
+
                 if audio_duration > max_duration:
                     logger.warning(f"  Audio {audio_duration:.1f}s exceeds {max_duration}s cap, trimming")
                     audio = audio[:max_duration * 1000].fade_out(500)
