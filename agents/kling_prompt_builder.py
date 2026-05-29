@@ -147,9 +147,16 @@ After the camera line, describe EVERYTHING else: environment, materials, colors 
             text = text.split("\n", 1)[1].rsplit("```", 1)[0]
 
         data = json.loads(text)
-        detailed_prompts = [scene["description"] for scene in data["scenes"]]
-
-        for i, prompt in enumerate(detailed_prompts):
-            logger.info(f"  Kling prompt {i+1}: {len(prompt)} chars, {len(prompt.split())} words")
+        detailed_prompts = []
+        for scene in data["scenes"]:
+            prompt = scene["description"]
+            # Kling API has a prompt length limit — cap at 2500 chars
+            if len(prompt) > 2500:
+                prompt = prompt[:2500].rsplit(" ", 1)[0]
+                # Ensure quality tags are at the end
+                if "cinematic" not in prompt[-100:]:
+                    prompt += " cinematic photorealistic 4K HDR, shallow depth of field, film grain"
+            detailed_prompts.append(prompt)
+            logger.info(f"  Kling prompt {len(detailed_prompts)}: {len(prompt)} chars, {len(prompt.split())} words")
 
         return detailed_prompts
