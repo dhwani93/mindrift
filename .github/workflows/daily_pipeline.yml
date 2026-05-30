@@ -14,7 +14,7 @@ on:
 jobs:
   produce:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 360  # 6 hours — waits for Telegram approval indefinitely
 
     steps:
       - uses: actions/checkout@v4

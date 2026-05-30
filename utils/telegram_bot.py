@@ -115,8 +115,8 @@ class TelegramBot:
             logger.error(f"Telegram video send failed: {e}")
             return False
 
-    def wait_for_approval(self, timeout_minutes: int = 30) -> bool | None:
-        """Wait for YES/NO approval. Returns True, False, or None (timeout)."""
+    def wait_for_approval(self, timeout_minutes: int = 0) -> bool | None:
+        """Wait for YES/NO approval. Returns True or False. Waits indefinitely by default."""
         # Clear old updates
         requests.get(f"{self.base_url}/getUpdates", params={"offset": -1}, timeout=10)
         time.sleep(1)
@@ -126,7 +126,8 @@ class TelegramBot:
             requests.get(f"{self.base_url}/getUpdates", params={"offset": last_id + 1}, timeout=10)
 
         start = time.time()
-        while time.time() - start < timeout_minutes * 60:
+        max_wait = timeout_minutes * 60 if timeout_minutes > 0 else float('inf')
+        while time.time() - start < max_wait:
             try:
                 r = requests.get(f"{self.base_url}/getUpdates", params={"timeout": 30}, timeout=40)
                 for update in r.json().get("result", []):
@@ -144,7 +145,7 @@ class TelegramBot:
                 logger.debug(f"Polling error: {e}")
             time.sleep(5)
 
-        self.send_message("⏰ No response — skipping upload.")
+        # Should never reach here with infinite wait, but just in case
         return None
 
     def send_completion(self, title: str, duration: float) -> bool:
