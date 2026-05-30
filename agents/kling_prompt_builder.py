@@ -87,10 +87,12 @@ class KlingPromptBuilder:
             List of dicts with clip_number, duration_sec, purpose, prompt.
         """
         # Determine clip structure based on target length
-        if target_length_sec <= 35:
-            clip_plan = "Generate exactly 3 clips: 2 × 10-second clips + 1 × 5-second clip = 25 seconds of generated video. The remaining ~10 seconds will be filled with reused/still/zoom shots in post."
+        if target_length_sec <= 20:
+            clip_plan = "Generate exactly 3 clips: 3 × 5-second clips = 15 seconds of generated video. The remaining ~5 seconds will use the last frame held or a slow zoom."
+        elif target_length_sec <= 35:
+            clip_plan = "Generate exactly 3 clips: 2 × 10-second clips + 1 × 5-second clip = 25 seconds of generated video."
         else:
-            clip_plan = "Generate exactly 3 clips: 3 × 10-second clips = 30 seconds of generated video. The remaining ~30 seconds will be filled with reused/still/zoom shots in post."
+            clip_plan = "Generate exactly 3 clips: 3 × 10-second clips = 30 seconds of generated video."
 
         user_prompt = f"""Create Kling AI video prompts for this pet-POV comedy episode.
 

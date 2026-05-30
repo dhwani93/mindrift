@@ -73,7 +73,7 @@ OUTPUT FORMAT — respond with valid JSON:
       "hook": "So you pay money… to live in my house?",
       "premise": "Orange cat realizes humans pay to live in her apartment. She's been the landlord this whole time.",
       "tone": "savage",
-      "recommended_length_sec": 35,
+      "recommended_length_sec": 20,
       "score": 8.7,
       "score_breakdown": {"rewatchability": 9, "relatability": 9, "character": 8, "monetization": 9, "freshness": 7}
     }
@@ -148,7 +148,7 @@ class SeedGenerator:
                 hook=s["hook"],
                 premise=s["premise"],
                 tone=s.get("tone", "savage"),
-                recommended_length_sec=s.get("recommended_length_sec", 35),
+                recommended_length_sec=s.get("recommended_length_sec", 20),
                 score=s.get("score", 0),
                 score_breakdown=s.get("score_breakdown", {}),
             ))

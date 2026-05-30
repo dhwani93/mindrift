@@ -3,9 +3,9 @@ channel:
   tagline: "Tiny animals explaining human problems."
 
 content:
-  max_words: 80                 # ~35 seconds at natural pace
-  max_video_duration_sec: 35    # Default episode length
-  max_long_duration_sec: 60     # For high-potential episodes
+  max_words: 45                 # ~20 seconds at natural pace
+  max_video_duration_sec: 20    # Default episode length
+  max_long_duration_sec: 40     # Only when user says "make it longer"
 
 voice:
   model_id: "eleven_turbo_v2_5"

@@ -32,7 +32,7 @@ SCRIPT RULES:
 - End with a punchline or a callback to the hook
 - Use the character's specific voice/personality
 - Include [PAUSE 0.5s] sparingly for comedic timing
-- Target word count based on length: 35s ≈ 60-80 words, 60s ≈ 110-140 words
+- Target word count based on length: 20s ≈ 35-45 words, 35s ≈ 60-80 words, 60s ≈ 110-140 words
 
 CHARACTER VOICES:
 - Orange Cat: "I" statements, possessive, contemptuous of humans, references "my house", "my couch"
