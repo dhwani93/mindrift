@@ -304,14 +304,34 @@ class Orchestrator:
 
             logger.info(f"  Voice: {audio_duration:.1f}s")
 
-            # Kling clips
+            # Kling clips — submit ALL in parallel, then poll ALL
             video_path = output_dir / "video.mp4"
             clip_paths = []
+
+            # Submit all tasks at once
+            task_ids = []
+            clip_outputs = []
             for clip in clips:
                 clip_path = output_dir / f"clip_{clip['clip_number']:02d}.mp4"
-                logger.info(f"  Clip {clip['clip_number']}: {forced_duration}s")
-                kling.generate(clip["prompt"], clip_path, duration=forced_duration)
+                clip_outputs.append(clip_path)
+                logger.info(f"  Submitting clip {clip['clip_number']}...")
+                task_id = kling._submit_generation(clip["prompt"], duration=forced_duration)
+                task_ids.append(task_id)
+
+            logger.info(f"  All {len(task_ids)} clips submitted. Polling in parallel...")
+
+            # Poll all tasks until all complete
+            import time as _time
+            for idx, (task_id, clip_path) in enumerate(zip(task_ids, clip_outputs)):
+                video_url = kling._poll_task(task_id)
+                kling._download_video(video_url, clip_path)
                 clip_paths.append(clip_path)
+                logger.info(f"  Clip {idx + 1} done.")
+
+            # Log cost
+            from utils.cost_tracker import log_cost
+            total_duration = forced_duration * len(clips)
+            log_cost("kling", total_duration, total_duration * 0.075)
 
             # Stitch
             if len(clip_paths) == 1:
