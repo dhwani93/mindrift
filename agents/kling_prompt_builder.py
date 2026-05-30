@@ -177,7 +177,7 @@ JSON only. Exactly 3 clips, each 5 seconds."""
             prompt = prompt.replace("\n", " ").replace("\r", " ")
             prompt = " ".join(prompt.split())
             # Cap at 300 chars (roughly 40-50 words)
-            if len(prompt) > 300:
+            if len(prompt) > 400:
                 prompt = prompt[:300].rsplit(" ", 1)[0]
                 if "cartoon" not in prompt[-50:]:
                     prompt += " Warm 3D storybook cartoon, cinematic 4K."
