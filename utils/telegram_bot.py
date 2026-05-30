@@ -49,7 +49,8 @@ class TelegramBot:
                     age_hours = (time.time() - msg_time) / 3600
                     if age_hours <= max_age_hours:
                         text = msg.get("text", "")
-                        if text and not text.startswith("/") and text.lower() not in ("hi", "hello", "hey"):
+                        skip_words = ("hi", "hello", "hey", "yes", "y", "no", "n", "skip", "nope", "post", "go", "approve", "reject")
+                        if text and not text.startswith("/") and text.lower().strip() not in skip_words:
                             return text
             return None
         except Exception as e:
