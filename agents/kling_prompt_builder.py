@@ -93,7 +93,7 @@ class KlingPromptBuilder:
         self.model = "claude-haiku-4-5-20251001"
 
     @retry(max_attempts=3, base_delay=2.0)
-    def build_prompts(self, script: str, character: str, visual_direction: str, target_length_sec: int = 35) -> list[dict]:
+    def build_prompts(self, script: str, character: str, visual_direction: str, target_length_sec: int = 20) -> list[dict]:
         """Generate Kling prompts for a pet-POV episode.
 
         Args:

@@ -207,11 +207,13 @@ class Orchestrator:
             # STEP 4: Generate Kling prompts (FREE)
             # ============================================
             logger.info("[4/7] Building Kling prompts...")
+            # Always 20s max — 3 clips × 5 seconds
+            target_length = self.config["content"]["max_video_duration_sec"]
             clips = prompt_builder.build_prompts(
                 script=scored.script,
                 character=chosen_seed.character,
                 visual_direction=scored.visual_direction,
-                target_length_sec=chosen_seed.recommended_length_sec,
+                target_length_sec=target_length,
             )
 
             # ============================================

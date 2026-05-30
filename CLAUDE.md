@@ -67,12 +67,14 @@ BAD: Cat goes "The economic implications of domicile monetization are concerning
 **3 approval gates before any upload. No credits wasted without approval.**
 
 ## Video Specs
-- **Duration**: 15-20 seconds (hard cap)
+- **Duration**: 15-20 seconds HARD CAP. Never longer. Period.
 - **Format**: Vertical 9:16 (1080x1920)
-- **Clips**: 3 × 5-second Kling pro mode clips
+- **Clips**: ALWAYS 3 × 5-second Kling pro mode clips = 15 seconds of generated video
 - **Style**: 3D Pixar cartoon, NOT photorealistic
 - **Audio**: ElevenLabs voiceover + ambient background drone
 - **Voice speed**: 1.0x (natural, no speed-up)
+- **Text overlays**: Title at top (persistent), word-by-word subtitles at bottom (yellow)
+- **NEVER let Claude decide the duration. It's always 20s max. Hardcoded.**
 
 ## Kling AI Video Generation
 
