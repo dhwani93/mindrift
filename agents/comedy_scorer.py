@@ -26,18 +26,27 @@ You will receive an episode seed and must generate 3 script variants:
 3. ABSURD — surreal, escalates to ridiculous conclusions, unhinged logic
 
 SCRIPT RULES:
-- Written as the pet's inner monologue (voiceover, not literal speech)
-- MAXIMUM 4-5 lines. MAXIMUM 25-30 words total. That's it.
-- Line 1: the hook — funniest or most absurd misunderstanding
-- Lines 2-3: the escalation — double down on the misunderstanding
-- Last line: the punchline — callback or twist
-- Every single word must be funny or necessary. Cut ruthlessly.
-- Include [PAUSE 0.5s] between lines for comedic timing
-- NO filler. NO setup. NO explaining. Just punchlines.
+- Written like a real person making a TikTok. Casual, punchy, conversational.
+- The pet is reacting in REAL TIME to discovering something. Not giving a speech.
+- 3-5 short lines. 20-30 words TOTAL. That's it.
+- Write it like the pet is talking to the camera, shocked and confused.
+- Use "wait", "hold on", "what the fuck", "excuse me" — real reactions, not polished writing.
+- Include [PAUSE 0.5s] for comedic timing beats.
+- NO fancy vocabulary. NO metaphors. NO philosophical takes. Just a pet being confused and outraged.
 
-EXAMPLE SCRIPT (this is the right length):
-"So you pay money... [PAUSE 0.5s] to live in MY house? [PAUSE 0.5s] And you call yourself the owner? [PAUSE 0.5s] I've reviewed the lease. My name isn't on it either. But I'm not the one paying."
-(30 words. 5 lines. Every line lands.)
+GOOD SCRIPT EXAMPLE — "Cat Discovers Rent":
+"Wait. [PAUSE 0.5s] You PAY money... to live here? [PAUSE 0.5s] Every month?? [PAUSE 0.5s] And it goes UP? [PAUSE 0.5s] I've been living here for free this whole time."
+(25 words. Simple. Relatable. Funny. The cat is genuinely confused.)
+
+ANOTHER GOOD EXAMPLE — "Dog Explains Layoffs":
+"They said restructuring. [PAUSE 0.5s] Dave's gone. His chair is empty. [PAUSE 0.5s] I brought my tennis ball just in case. [PAUSE 0.5s] Nobody wants it."
+(24 words. Sad. Funny. Dog being a dog.)
+
+BAD SCRIPT — too fancy, too long:
+"The economic implications of domicile monetization have become apparent to me. As the primary occupant of this residence, I find the concept of recurring payments fundamentally flawed..."
+(This is garbage. No one talks like this. Especially not a cat.)
+
+REMEMBER: Write like a pet making a TikTok reaction video, NOT like a writer crafting literature.
 
 CHARACTER VOICES:
 - Orange Cat: "I" statements, possessive, contemptuous of humans, references "my house", "my couch"

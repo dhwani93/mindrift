@@ -49,10 +49,10 @@ THEN INCLUDE:
 2. SETTING: colorful cartoon room, simple clean backgrounds
 3. ACTION: one clear exaggerated movement
 4. CAMERA: simple movement (slow push-in, static, slight tilt)
-5. STYLE: "3D animated cartoon style, Pixar-like quality, soft lighting, vibrant colors, expressive character animation. No text, no captions, no extra limbs."
+5. STYLE: "3D animated cartoon style, Pixar-like quality, soft lighting, vibrant colors, expressive character animation. SILENT VIDEO. No text, no captions, no speech, no dialogue, no subtitles, no words on screen, no extra limbs, no distorted faces."
 
 GOOD PROMPT:
-"5-second vertical 9:16 3D animated cartoon video. A chubby orange tabby cat with huge judgmental green eyes sits on a teal couch in a bright colorful apartment, staring directly at the camera with one eyebrow raised and a smug half-smile. The cat's arms are crossed. Warm soft cartoon lighting, clean simple background with a potted plant and window. Camera: static with very slow push-in. 3D animated cartoon style, Pixar-like quality, soft lighting, vibrant colors, expressive character animation. No text, no captions, no extra limbs."
+"5-second vertical 9:16 3D animated cartoon video. A chubby orange tabby cat with huge judgmental green eyes sits on a teal couch in a bright colorful apartment, staring directly at the camera with one eyebrow raised and a smug half-smile. The cat's arms are crossed. Warm soft cartoon lighting, clean simple background with a potted plant and window. Camera: static with very slow push-in. 3D animated cartoon style, Pixar-like quality, soft lighting, vibrant colors, expressive character animation. SILENT VIDEO. No text, no captions, no speech, no dialogue, no subtitles, no words on screen, no extra limbs, no distorted faces."
 
 BAD PROMPT:
 "A realistic cat sitting on a couch" (wrong style, too vague)

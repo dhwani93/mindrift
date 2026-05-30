@@ -1,4 +1,4 @@
-"""Orchestrator — pet-POV comedy video pipeline."""
+"""Orchestrator — pet-POV comedy pipeline with multi-step Telegram approval."""
 
 import logging
 import re
@@ -22,7 +22,7 @@ CONFIG_PATH = Path(__file__).parent.parent / "config" / "settings.yaml"
 
 
 class Orchestrator:
-    """Pipeline: seeds → user picks → comedy score → voice → Kling clips → merge → approve → upload."""
+    """Pipeline with 3 approval gates before spending money."""
 
     def __init__(self, output_base: Path | None = None):
         with open(CONFIG_PATH) as f:
@@ -34,41 +34,7 @@ class Orchestrator:
         if result.returncode != 0:
             raise RuntimeError(f"FFmpeg failed ({description}): {result.stderr[-200:]}")
 
-    def _add_captions(self, input_path: Path, output_path: Path, captions: list[str], duration: float) -> None:
-        """Add caption moments as TikTok-style text overlays."""
-        if not captions:
-            import shutil
-            shutil.copy2(input_path, output_path)
-            return
-
-        time_per_caption = duration / len(captions)
-        filters = []
-        for idx, caption in enumerate(captions):
-            start = idx * time_per_caption
-            end = (idx + 1) * time_per_caption
-            safe = caption.replace("'", "\u2019").replace(":", "\\:").replace("\\", "")
-            filters.append(
-                f"drawtext=text='{safe}'"
-                f":fontsize=48:fontcolor=white:borderw=4:bordercolor=black"
-                f":x=(w-text_w)/2:y=h*0.78"
-                f":enable='between(t,{start:.2f},{end:.2f})'"
-            )
-
-        cmd = [
-            "ffmpeg", "-y", "-i", str(input_path),
-            "-vf", ",".join(filters),
-            "-c:v", "libx264", "-preset", "fast", "-crf", "23",
-            "-c:a", "copy", "-pix_fmt", "yuv420p", str(output_path),
-        ]
-        try:
-            self._run_ffmpeg(cmd, "add_captions")
-        except RuntimeError as e:
-            logger.warning(f"Captions failed: {e}")
-            import shutil
-            shutil.copy2(input_path, output_path)
-
     def _merge_video_audio(self, video_path: Path, audio_path: Path, output_path: Path, duration: float) -> None:
-        """Merge video with voiceover, trim to exact audio length."""
         cmd = [
             "ffmpeg", "-y",
             "-i", str(video_path), "-i", str(audio_path),
@@ -81,11 +47,6 @@ class Orchestrator:
         self._run_ffmpeg(cmd, "merge_video_audio")
 
     def run_daily(self, run_date: str | None = None, dry_run: bool = False) -> dict:
-        """Run the full pet-POV pipeline.
-
-        Flow: generate seeds → send to Telegram → user picks → score scripts →
-              generate voice → generate Kling clips → merge → approve → upload
-        """
         run_date = run_date or date.today().isoformat()
         output_dir = self.output_base / run_date
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -93,7 +54,7 @@ class Orchestrator:
         summary = {"date": run_date, "status": "started", "videos": []}
 
         logger.info(f"{'=' * 50}")
-        logger.info(f"MINDRIFT PET POV — {run_date}")
+        logger.info(f"PAWS & OPINIONS — {run_date}")
         logger.info(f"{'=' * 50}")
 
         try:
@@ -105,13 +66,13 @@ class Orchestrator:
             uploader = YouTubeUploader()
             telegram = TelegramBot()
 
-            # === STEP 1: Get seed (file → Telegram → generate & ask) ===
-            logger.info("[1/6] Getting episode seed...")
-
+            # ============================================
+            # GATE 0: Get seed (file → Telegram → generate)
+            # ============================================
+            logger.info("[1/7] Getting seed...")
             user_reply = None
             seed_file = Path(__file__).parent.parent / "data" / "daily_seed.txt"
 
-            # Priority 1: Check seed file (from workflow_dispatch input)
             if seed_file.exists():
                 file_seed = seed_file.read_text().strip()
                 if file_seed:
@@ -119,18 +80,16 @@ class Orchestrator:
                     user_reply = file_seed
                     logger.info(f"  Seed from file: {user_reply[:60]}")
 
-            # Priority 2: Check Telegram for recent reply (from morning seeds)
             if not user_reply:
                 user_reply = telegram.get_latest_message(max_age_hours=3)
                 if user_reply:
                     logger.info(f"  Seed from Telegram: {user_reply[:60]}")
 
-            # Priority 3: Generate seeds, send to Telegram, wait
             if not user_reply:
                 seeds = seed_gen.generate_seeds()
                 formatted = seed_gen.format_for_telegram(seeds)
                 telegram.send_seeds(formatted)
-                logger.info("  Seeds sent to Telegram. Waiting 30 min for reply...")
+                logger.info("  Seeds sent. Waiting 30 min...")
 
                 import time
                 start = time.time()
@@ -141,17 +100,12 @@ class Orchestrator:
                         break
                     time.sleep(10)
 
-            # === STEP 2: Parse choice and select seed ===
-            logger.info("[2/6] Selecting seed...")
-
+            # Parse choice
             if user_reply:
                 parsed = telegram.parse_seed_reply(user_reply)
-                logger.info(f"  Parsed: {parsed}")
             else:
-                logger.info("  No reply — using top seed")
                 parsed = {"seed_number": 1, "modifier": None, "custom_idea": None}
 
-            # Generate seeds if we don't have them yet
             if "seeds" not in dir():
                 seeds = seed_gen.generate_seeds(bias=user_reply if parsed.get("custom_idea") else "")
 
@@ -165,24 +119,82 @@ class Orchestrator:
                 chosen_seed = seeds[0]
 
             modifier = parsed.get("modifier", "")
-            logger.info(f"  Chosen: '{chosen_seed.title}' ({chosen_seed.character}) | Modifier: {modifier or 'none'}")
+            logger.info(f"  Chosen: '{chosen_seed.title}' ({chosen_seed.character})")
 
-            # === STEP 3: Comedy scoring — 3 variants, pick best ===
-            logger.info("[3/6] Scoring comedy scripts...")
+            # ============================================
+            # STEP 2: Generate script (FREE)
+            # ============================================
+            logger.info("[2/7] Generating script...")
             scored = scorer.score_and_pick(chosen_seed, modifier=modifier)
-            logger.info(f"  Best: {scored.tone} ({scored.total_score}) — {scored.script[:60]}...")
+            logger.info(f"  Best: {scored.tone} ({scored.total_score})")
 
-            # === STEP 4: Generate voiceover ===
-            logger.info("[4/6] Generating voiceover...")
+            # ============================================
+            # GATE 1: APPROVE SCRIPT (before spending money)
+            # ============================================
+            logger.info("[3/7] Sending script for approval...")
+            script_msg = (
+                f"📝 Script for: \"{chosen_seed.title}\"\n"
+                f"Character: {chosen_seed.character.replace('_', ' ').title()}\n"
+                f"Tone: {scored.tone}\n\n"
+                f"---\n"
+                f"{scored.script}\n"
+                f"---\n\n"
+                f"Reply YES to approve, NO to skip."
+            )
+            telegram.send_message(script_msg)
+
+            if not dry_run:
+                script_approval = telegram.wait_for_approval(timeout_minutes=60)
+                if script_approval is not True:
+                    logger.info("  Script rejected or timed out. Stopping.")
+                    telegram.send_message("⏭️ Skipped. Try again tomorrow!")
+                    summary["status"] = "skipped"
+                    return summary
+                logger.info("  ✅ Script approved!")
+
+            # ============================================
+            # STEP 4: Generate Kling prompts (FREE)
+            # ============================================
+            logger.info("[4/7] Building Kling prompts...")
+            clips = prompt_builder.build_prompts(
+                script=scored.script,
+                character=chosen_seed.character,
+                visual_direction=scored.visual_direction,
+                target_length_sec=chosen_seed.recommended_length_sec,
+            )
+
+            # ============================================
+            # GATE 2: APPROVE KLING PROMPTS (before spending money)
+            # ============================================
+            logger.info("[5/7] Sending Kling prompts for approval...")
+            prompts_msg = "🎬 Video prompts:\n\n"
+            for c in clips:
+                prompts_msg += f"Clip {c['clip_number']} ({c['duration_sec']}s): {c['purpose']}\n"
+                prompts_msg += f"→ {c['prompt'][:200]}...\n\n"
+            prompts_msg += "Reply YES to generate videos, NO to skip."
+            telegram.send_message(prompts_msg)
+
+            if not dry_run:
+                prompts_approval = telegram.wait_for_approval(timeout_minutes=60)
+                if prompts_approval is not True:
+                    logger.info("  Prompts rejected or timed out. Stopping.")
+                    telegram.send_message("⏭️ Skipped. No credits used!")
+                    summary["status"] = "skipped"
+                    return summary
+                logger.info("  ✅ Prompts approved! Now spending credits...")
+
+            # ============================================
+            # STEP 6: GENERATE (costs money — only after 2 approvals)
+            # ============================================
+            logger.info("[6/7] Generating voice + video (approved)...")
+
+            # Voice
             clean_script = re.sub(r'\[.*?\]', '', scored.script).strip()
-
             audio_path = output_dir / "voice.wav"
             raw_path = output_dir / "voice_raw.mp3"
 
-            # Get character-specific voice settings
             char_config = self.config["voice"]["characters"].get(chosen_seed.character, {})
             voice_id = char_config.get("voice_id", "JBFqnCBsd6RMkjVDRZzb")
-
             voice_gen._generate_audio_with_voice(clean_script, raw_path, voice_id, char_config)
 
             from utils.audio_processing import process_narration
@@ -204,9 +216,8 @@ class Orchestrator:
             audio = AudioSegment.from_file(audio_path)
             audio_duration = len(audio) / 1000.0
 
-            # Enforce duration range
             min_dur = 15
-            max_dur = chosen_seed.recommended_length_sec or self.config["content"]["max_video_duration_sec"]
+            max_dur = self.config["content"]["max_video_duration_sec"]
             if audio_duration < min_dur:
                 audio = audio + AudioSegment.silent(duration=int((min_dur - audio_duration) * 1000))
                 audio.export(str(audio_path), format="wav")
@@ -216,28 +227,19 @@ class Orchestrator:
                 audio.export(str(audio_path), format="wav")
                 audio_duration = max_dur
 
-            logger.info(f"  Voice: {audio_duration:.1f}s ({chosen_seed.character})")
+            logger.info(f"  Voice: {audio_duration:.1f}s")
 
-            # === STEP 5: Generate Kling video clips ===
-            logger.info("[5/6] Generating Kling video clips...")
-            clips = prompt_builder.build_prompts(
-                script=scored.script,
-                character=chosen_seed.character,
-                visual_direction=scored.visual_direction,
-                target_length_sec=chosen_seed.recommended_length_sec,
-            )
-
+            # Kling clips
             video_path = output_dir / "video.mp4"
             clip_paths = []
-            # Force 5s clips for 20s videos, regardless of what Claude says
             forced_duration = 5 if chosen_seed.recommended_length_sec <= 20 else 10
             for clip in clips:
                 clip_path = output_dir / f"clip_{clip['clip_number']:02d}.mp4"
-                logger.info(f"  Clip {clip['clip_number']}: {forced_duration}s — {clip['purpose'][:60]}")
+                logger.info(f"  Clip {clip['clip_number']}: {forced_duration}s")
                 kling.generate(clip["prompt"], clip_path, duration=forced_duration)
                 clip_paths.append(clip_path)
 
-            # Stitch clips
+            # Stitch
             if len(clip_paths) == 1:
                 clip_paths[0].rename(video_path)
             elif clip_paths:
@@ -251,15 +253,13 @@ class Orchestrator:
                 for p in clip_paths:
                     p.unlink(missing_ok=True)
 
-            # Merge video + audio + captions
-            logger.info("  Merging video + audio + captions...")
-            merged_path = output_dir / "merged.mp4"
+            # Merge video + audio (no captions — they were broken)
             final_path = output_dir / "final.mp4"
-            self._merge_video_audio(video_path, audio_path, merged_path, audio_duration)
-            self._add_captions(merged_path, final_path, scored.caption_moments, audio_duration)
-            merged_path.unlink(missing_ok=True)
+            self._merge_video_audio(video_path, audio_path, final_path, audio_duration)
 
-            # === STEP 6: Telegram approval → Upload ===
+            # ============================================
+            # GATE 3: APPROVE FINAL VIDEO
+            # ============================================
             title = chosen_seed.title
             description = f"{scored.script[:150]}...\n\n#shorts #pets #funny #petcomedy #pawsandopinions"
             tags = self.config["seo"]["default_tags"] + [chosen_seed.character.replace("_", " "), chosen_seed.topic]
@@ -267,13 +267,13 @@ class Orchestrator:
             if dry_run:
                 logger.info(f"  [DRY RUN] Would send for approval: '{title}'")
             else:
-                logger.info("[6/6] Sending for Telegram approval...")
+                logger.info("[7/7] Sending final video for approval...")
                 sent = telegram.send_video_for_approval(str(final_path), title, scored.script, audio_duration)
 
                 if sent:
                     approval = telegram.wait_for_approval(timeout_minutes=30)
                     if approval is True:
-                        logger.info("  ✅ Approved! Uploading...")
+                        logger.info("  ✅ Uploading!")
                         uploader.run(
                             long_form_path=final_path, short_paths=[],
                             title=title, description=description,
@@ -283,16 +283,14 @@ class Orchestrator:
                     elif approval is False:
                         logger.info("  ❌ Rejected.")
                     else:
-                        logger.info("  ⏰ No response. Skipping.")
+                        logger.info("  ⏰ Timed out.")
                 else:
-                    logger.error("  Failed to send video to Telegram")
+                    logger.error("  Failed to send video")
 
             summary["videos"].append({
                 "title": title,
                 "character": chosen_seed.character,
-                "tone": scored.tone,
                 "duration": audio_duration,
-                "score": scored.total_score,
             })
             summary["status"] = "success"
 
