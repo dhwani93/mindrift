@@ -76,29 +76,60 @@ BAD: Cat goes "The economic implications of domicile monetization are concerning
 - **Text overlays**: Title at top (persistent), word-by-word subtitles at bottom (yellow)
 - **NEVER let Claude decide the duration. It's always 20s max. Hardcoded.**
 
-## Kling AI Video Generation
+## Kling AI Video Generation (Research-Backed)
 
-### Prompt Formula
+Sources: klingaio.com, filmora.com, neolemon.com, ai-pro.org, banana-prompts.net
+
+### CRITICAL RULES:
+1. **Prompts under 40 words.** Long prompts CONFUSE Kling. Shorter = better quality.
+2. **Use "warm 3D storybook cartoon"** not "Pixar style" — stays cuter, less drift.
+3. **One action per clip.** Don't cram multiple movements.
+4. **5-second clips only.** Less drift, higher quality.
+5. **Anchor hands to objects.** Never floating in empty space.
+6. **Specific negative prompts.** "No face morphing, no outfit change" not just "no bad."
+
+### Prompt Formula (exact order):
 ```
-[Duration] + [Style] + [Character] + [Expression] + [Action] + [Setting] + [Lighting] + [Camera]
+Camera + Character + Expression + Action + Setting + "warm 3D storybook cartoon, soft lighting, cinematic 4K"
 ```
 
-### Style Keywords (use every time)
+### Character Templates (LOCKED — use exact words):
 ```
-3D Pixar style animated cartoon, smooth subdivision surfaces, stylized proportions, oversized head, big expressive eyes, soft rounded geometry, cinematic 4K
-```
-
-### Negative Prompt (sent with every request)
-```
-text, words, subtitles, captions, speech bubbles, dialogue, letters, numbers, watermark, logo, realistic, photorealistic, scary, horror, dark, ugly, distorted face, extra limbs, extra fingers, blurry, low quality, deformed, mutated, disfigured
+ORANGE CAT: "chubby fluffy orange tabby cat, huge bright green eyes, round face, oversized head"
+GOLDEN RETRIEVER: "fluffy golden retriever, big round brown puppy eyes, floppy ears, oversized head"
+SENIOR DOG: "elderly gray-muzzled labrador, droopy wise brown eyes, reading glasses on nose"
+KITTEN: "tiny gray tabby kitten, enormous round yellow eyes, tiny body, oversized ears"
 ```
 
-### API Parameters
+### Expressions (exact keywords Kling responds to):
+- **Judgmental**: "one eyebrow raised, narrowed eyes, slight smirk"
+- **Shocked**: "eyes wide open, mouth O shape, ears straight up"
+- **Confused**: "head tilted, one ear flopped, squinting"
+- **Smug**: "half-closed eyes, slight smile, leaning back"
+- **Sad**: "big watery eyes looking up, ears drooping"
+- **Dramatic**: "paw on forehead, eyes closed, head turned away"
+
+### Camera (pick ONE per clip):
+- "Slow push-in." — hook, builds intimacy
+- "Static wide shot." — context, character + environment
+- "Slight pull-back." — reveal, aftermath
+- "Low angle looking up." — power, dominance
+
+### Negative Prompt (sent with EVERY request):
+```
+text, words, subtitles, captions, speech bubbles, letters, numbers, watermark, logo,
+realistic, photorealistic, scary, horror, dark,
+face morphing, outfit change, hair color change,
+extra limbs, extra fingers, floating hands,
+blurry, low quality, deformed, disfigured, plastic skin
+```
+
+### API Parameters:
 ```json
 {
   "model_name": "kling-v1",
-  "prompt": "...",
-  "negative_prompt": "...",
+  "prompt": "35-40 words MAX",
+  "negative_prompt": "...(see above)...",
   "duration": "5",
   "aspect_ratio": "9:16",
   "mode": "pro",
@@ -106,18 +137,16 @@ text, words, subtitles, captions, speech bubbles, dialogue, letters, numbers, wa
 }
 ```
 
-### Expression Library
-- **Judgmental**: one eyebrow raised, narrowed eyes, slight smirk, chin tilted up
-- **Shocked**: eyes wide open, mouth in small O shape, ears perked straight up
-- **Confused**: head tilted 30 degrees, one ear flopped, squinting
-- **Smug**: half-closed eyes, slight smile, arms crossed, leaning back
-- **Sad**: big round watery eyes looking up, ears drooping, lower lip out
-- **Dramatic**: paw raised to forehead, eyes closed, head turned away
+### GOOD Prompt (37 words):
+```
+Slow push-in. Chubby orange tabby cat with huge green eyes sits on teal couch, one eyebrow raised, arms crossed, judgmental stare at camera. Bright apartment, afternoon sunlight. Warm 3D storybook cartoon, cinematic 4K.
+```
 
-### Example Good Prompt
+### BAD Prompt (DON'T):
 ```
-5-second vertical 9:16 video. 3D Pixar style animated cartoon, smooth subdivision surfaces, stylized proportions, cinematic 4K. A chubby fluffy orange tabby cat with huge expressive bright green eyes, round face, oversized head sits on a teal couch in a bright colorful cartoon living room. The cat has one eyebrow raised, narrowed eyes, slight smirk — pure judgment. Arms crossed over fluffy chest. Clean simple background with potted plant and window. Warm soft afternoon sunlight, pastel color palette. Static camera centered on cat's face with very slow push-in.
+A 5-second vertical 9:16 3D Pixar style animated cartoon video featuring a chubby fluffy orange tabby cat with enormous expressive bright green eyes sitting on a teal couch in a bright colorful apartment...
 ```
+70+ words. Kling gets confused. CUT IT.
 
 ## Script Example
 

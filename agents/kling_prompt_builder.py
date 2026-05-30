@@ -1,4 +1,21 @@
-"""Kling Prompt Builder — generates ultra-detailed pet-POV video prompts."""
+"""Kling Prompt Builder — builds concise, high-quality Pixar-style pet video prompts.
+
+Research-backed rules (from Kling AI docs, community guides, creator blogs):
+1. Prompts under 40-50 words work BEST. Long prompts confuse the model.
+2. Use "warm 3D storybook cartoon" not just "Pixar" — stays cuter.
+3. Formula: Camera + Subject + Action + Setting + Lighting (in that order).
+4. Negative prompts must be SPECIFIC (not generic "no bad things").
+5. Keep clips 5 seconds — less drift, higher quality.
+6. Anchor hands to objects — never floating in empty space.
+7. One clear action per clip — don't cram multiple movements.
+
+Sources:
+- https://klingaio.com/blogs/kling-3-prompt-guide
+- https://filmora.wondershare.com/ai-prompt/kling-ai-prompt-guide.html
+- https://www.neolemon.com/blog/kling-ai-grok-ai-character-consistency-tips/
+- https://ai-pro.org/learn-ai/articles/the-kling-ai-pet-video-trend-creators-are-using-now
+- https://www.banana-prompts.net/25-easy-prompts-for-3d-cartoon/
+"""
 
 import json
 import logging
@@ -14,77 +31,89 @@ logger = logging.getLogger(__name__)
 
 CONFIG_PATH = Path(__file__).parent.parent / "config" / "settings.yaml"
 
-SYSTEM_PROMPT = """You are a cinematographer creating shot-by-shot prompts for Kling AI video generation. You are making short pet-POV comedy videos.
+# Character templates — locked visual identity for consistency
+CHARACTERS = {
+    "orange_cat": "chubby fluffy orange tabby cat, huge bright green eyes, round face, small pink nose, oversized head",
+    "golden_retriever": "fluffy golden retriever, big round brown puppy eyes, floppy ears, wet black nose, oversized head",
+    "senior_dog": "elderly gray-muzzled labrador, droopy wise brown eyes, small round reading glasses on nose",
+    "kitten": "tiny gray tabby kitten, enormous round yellow eyes taking up half its face, tiny body, oversized ears",
+}
 
-Kling renders EXACTLY what you describe. Be hyper-specific about every visual detail.
+# Expression keywords that Kling responds to
+EXPRESSIONS = {
+    "judgmental": "one eyebrow raised, narrowed eyes, slight smirk, chin up",
+    "shocked": "eyes wide open, mouth small O shape, ears straight up",
+    "confused": "head tilted right, one ear flopped, squinting",
+    "smug": "half-closed eyes, slight smile, leaning back",
+    "sad": "big watery eyes looking up, ears drooping",
+    "dramatic": "paw on forehead, eyes closed, head turned away",
+    "disgusted": "nose scrunched, one eye squinting, leaning away",
+    "suspicious": "eyes narrowed to slits, ears back, chin low",
+}
 
-CHARACTER VISUAL REFERENCES:
-- ORANGE CAT: Orange tabby cat, expressive green eyes, fluffy, sits/stands with confident posture
-- GOLDEN RETRIEVER: Golden retriever, warm brown eyes, slightly tilted head, earnest expression
-- SENIOR DOG: Older gray-muzzled labrador or mixed breed, tired eyes, dignified posture, lying down often
-- KITTEN: Small gray/tabby kitten, huge round eyes, oversized energy, tiny but overconfident body language
+# Negative prompt — specific artifacts to block
+NEGATIVE_PROMPT = (
+    "text, words, subtitles, captions, speech bubbles, letters, numbers, watermark, logo, "
+    "realistic, photorealistic, scary, horror, dark, "
+    "face morphing, outfit change, hair color change, "
+    "extra limbs, extra fingers, floating hands, "
+    "blurry, low quality, deformed, disfigured, plastic skin"
+)
 
-You write prompts for Kling AI to generate 3D Pixar-style cartoon pet videos.
+SYSTEM_PROMPT = """You write SHORT, PRECISE prompts for Kling AI video generation.
 
-PROMPT FORMULA (follow this exact structure for every prompt):
-[Duration] + [Style] + [Character Description] + [Expression/Emotion] + [Action] + [Setting] + [Lighting] + [Camera]
+CRITICAL RULE: Keep each prompt under 40 words. Kling works WORSE with long prompts.
 
-STYLE KEYWORDS (use these exact words):
-"3D Pixar style animated cartoon, smooth subdivision surfaces, stylized proportions, oversized head, big expressive eyes, soft rounded geometry, cinematic 4K"
+FORMULA (this exact order):
+Camera movement + Character + Expression + Action + Setting + Style tag
 
-CHARACTER TEMPLATES:
+STYLE TAG (end every prompt with):
+"warm 3D storybook cartoon, soft lighting, cinematic 4K"
 
-ORANGE CAT:
-"A chubby fluffy orange tabby cat with huge expressive bright green eyes, round face, small pink nose, fluffy cheeks, oversized head with stylized Pixar proportions, soft fur texture with warm orange tones"
+CHARACTER TEMPLATES (use these exact words):
+- ORANGE CAT: "chubby fluffy orange tabby cat, huge bright green eyes, round face, oversized head"
+- GOLDEN RETRIEVER: "fluffy golden retriever, big round brown puppy eyes, floppy ears, oversized head"
+- SENIOR DOG: "elderly gray-muzzled labrador, droopy wise brown eyes, reading glasses on nose"
+- KITTEN: "tiny gray tabby kitten, enormous round yellow eyes, tiny body, oversized ears"
 
-GOLDEN RETRIEVER:
-"A fluffy golden retriever with big round brown puppy eyes, floppy ears, wet black nose, oversized head with Pixar proportions, soft golden fur, dopey lovable expression"
+EXPRESSION KEYWORDS:
+- Judgmental: "one eyebrow raised, narrowed eyes, slight smirk"
+- Shocked: "eyes wide open, mouth O shape, ears straight up"
+- Confused: "head tilted, one ear flopped, squinting"
+- Smug: "half-closed eyes, slight smile, leaning back"
 
-SENIOR DOG:
-"An elderly gray-muzzled labrador with droopy wise brown eyes, slightly graying fur around the snout, dignified posture, small round reading glasses perched on nose, Pixar proportions"
+GOOD PROMPT (35 words):
+"Slow push-in. Chubby orange tabby cat with huge green eyes sits on teal couch, one eyebrow raised, arms crossed, judgmental stare at camera. Bright apartment, afternoon sunlight. Warm 3D storybook cartoon, cinematic 4K."
 
-KITTEN:
-"A tiny gray tabby kitten with enormous round yellow eyes that take up half its face, tiny body, oversized ears, Pixar proportions, impossibly cute but with a confident swagger"
+BAD PROMPT (too long, 100+ words):
+"A 5-second vertical 9:16 3D Pixar style animated cartoon video featuring a chubby fluffy orange tabby cat with enormous expressive bright green eyes and a round face with an oversized head sitting on a teal colored couch in a bright colorful cartoon apartment living room..."
+(This is WAY too long. Kling gets confused. Cut it to 35-40 words.)
 
-EXPRESSION LIBRARY (be specific):
-- Judgmental: "one eyebrow raised, narrowed eyes, slight smirk, chin tilted up"
-- Shocked: "eyes wide open, mouth in small O shape, ears perked straight up"
-- Confused: "head tilted 30 degrees to the right, one ear flopped, squinting"
-- Smug: "half-closed eyes, slight smile, arms crossed, leaning back"
-- Sad puppy: "big round watery eyes looking up, ears drooping, lower lip slightly out"
-- Dramatic: "paw raised to forehead, eyes closed, head turned away"
+CAMERA OPTIONS (pick ONE per clip):
+- "Slow push-in." (hook shot — builds intimacy)
+- "Static wide shot." (context shot — shows character + environment)
+- "Slight pull-back." (reveal shot — shows aftermath)
+- "Low angle looking up." (power shot — character dominance)
 
-SETTING TEMPLATE:
-"Bright colorful cartoon apartment, [specific room]. Clean simple background with [2-3 props]. Warm soft afternoon sunlight through window. Pastel color palette."
-
-CAMERA OPTIONS:
-- Hook shot: "Static camera, centered on character face, very slow push-in"
-- Reaction: "Static wide shot showing character and object, slight tilt down to object"
-- Punchline: "Static wide shot, character walks away from camera, slight pull-back"
-
-GOOD PROMPT EXAMPLE:
-"5-second vertical 9:16 video. 3D Pixar style animated cartoon, smooth subdivision surfaces, stylized proportions, cinematic 4K. A chubby fluffy orange tabby cat with huge expressive bright green eyes, round face, oversized head sits on a teal couch in a bright colorful cartoon living room. The cat has one eyebrow raised, narrowed eyes, slight smirk, chin tilted up — pure judgment. Arms crossed over fluffy chest. Clean simple background with potted plant and window. Warm soft afternoon sunlight, pastel color palette. Static camera centered on cat's face with very slow push-in."
-
-BAD PROMPT:
-"A cat on a couch looking at camera, Pixar style" (too vague — what expression? what colors? what lighting? what camera?)
+ONE ACTION PER CLIP. Do not combine multiple movements.
 
 OUTPUT FORMAT — valid JSON:
 {
   "clips": [
     {
       "clip_number": 1,
-      "duration_sec": 10,
-      "purpose": "Hook shot — cat staring judgmentally at camera",
-      "prompt": "The full ultra-detailed Kling prompt (100-200 words)"
+      "duration_sec": 5,
+      "purpose": "Hook — cat judging camera",
+      "prompt": "The 35-40 word prompt"
     }
   ]
 }
 
-Generate clips that match the episode's visual direction and script beats."""
+Generate exactly 3 clips. Each prompt MUST be under 40 words."""
 
 
 class KlingPromptBuilder:
-    """Generates ultra-detailed pet-POV Kling video prompts."""
+    """Builds concise, research-backed Kling video prompts for pet-POV content."""
 
     def __init__(self):
         with open(CONFIG_PATH) as f:
@@ -94,43 +123,27 @@ class KlingPromptBuilder:
 
     @retry(max_attempts=3, base_delay=2.0)
     def build_prompts(self, script: str, character: str, visual_direction: str, target_length_sec: int = 20) -> list[dict]:
-        """Generate Kling prompts for a pet-POV episode.
+        """Generate 3 concise Kling prompts for a pet-POV episode."""
 
-        Args:
-            script: The final sharpened script.
-            character: Character type (orange_cat, golden_retriever, etc.)
-            visual_direction: Brief visual direction from comedy scorer.
-            target_length_sec: Total video length target.
+        char_desc = CHARACTERS.get(character, CHARACTERS["orange_cat"])
 
-        Returns:
-            List of dicts with clip_number, duration_sec, purpose, prompt.
-        """
-        # Determine clip structure based on target length
-        if target_length_sec <= 20:
-            clip_plan = "Generate exactly 3 clips: 3 × 5-second clips = 15 seconds of generated video. The remaining ~5 seconds will use the last frame held or a slow zoom."
-        elif target_length_sec <= 35:
-            clip_plan = "Generate exactly 3 clips: 2 × 10-second clips + 1 × 5-second clip = 25 seconds of generated video."
-        else:
-            clip_plan = "Generate exactly 3 clips: 3 × 10-second clips = 30 seconds of generated video."
+        user_prompt = f"""Create 3 Kling video prompts for this pet comedy episode.
 
-        user_prompt = f"""Create Kling AI video prompts for this pet-POV comedy episode.
-
-CHARACTER: {character}
+CHARACTER: {char_desc}
 SCRIPT: "{script}"
 VISUAL DIRECTION: {visual_direction}
-TARGET LENGTH: {target_length_sec} seconds
 
-{clip_plan}
+Clip 1 = HOOK: Character staring at camera with strong expression. Slow push-in.
+Clip 2 = REACTION: Character looking at or interacting with a relevant prop/object.
+Clip 3 = PUNCHLINE: Character's final reaction — walking away, dramatic gesture, or deadpan stare.
 
-Clip 1 should be the HOOK shot — the pet's expression that makes someone stop scrolling.
-Clip 2 should be the REACTION/CONTEXT shot — the pet interacting with the relevant prop or situation.
-Clip 3 should be the PUNCHLINE shot — the pet's final expression or dramatic action (walking away, slow blink, etc.)
+Each prompt MUST be under 40 words. Use the formula: Camera + Character + Expression + Action + Setting + "warm 3D storybook cartoon, soft lighting, cinematic 4K"
 
-Each prompt must be 100-200 words. Be EXTREMELY specific about the animal's expression, the setting, props, lighting, and camera. JSON only."""
+JSON only. Exactly 3 clips, each 5 seconds."""
 
         response = self.client.messages.create(
             model=self.model,
-            max_tokens=4096,
+            max_tokens=2048,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": user_prompt}],
         )
@@ -145,15 +158,29 @@ Each prompt must be 100-200 words. Be EXTREMELY specific about the animal's expr
         data = json.loads(text)
         clips = data.get("clips", [])
 
-        # Sanitize prompts for Kling API
+        # Sanitize and validate
         for clip in clips:
             prompt = clip.get("prompt", "")
+            # Remove brackets and normalize
             prompt = prompt.replace("[", "").replace("]", "").replace("{", "").replace("}", "")
             prompt = prompt.replace("\n", " ").replace("\r", " ")
             prompt = " ".join(prompt.split())
-            if len(prompt) > 2000:
-                prompt = prompt[:2000].rsplit(" ", 1)[0]
+            # Cap at 300 chars (roughly 40-50 words)
+            if len(prompt) > 300:
+                prompt = prompt[:300].rsplit(" ", 1)[0]
+                if "cartoon" not in prompt[-50:]:
+                    prompt += " Warm 3D storybook cartoon, cinematic 4K."
             clip["prompt"] = prompt
-            logger.info(f"  Clip {clip['clip_number']}: {clip['duration_sec']}s — {clip['purpose'][:60]}")
+            clip["duration_sec"] = 5  # Force 5 seconds
+
+            word_count = len(prompt.split())
+            logger.info(f"  Clip {clip['clip_number']}: {word_count} words — {clip.get('purpose', '')[:50]}")
+            if word_count > 50:
+                logger.warning(f"    ⚠️ Prompt too long ({word_count} words) — may reduce quality")
 
         return clips
+
+    @staticmethod
+    def get_negative_prompt() -> str:
+        """Return the standard negative prompt for Kling API calls."""
+        return NEGATIVE_PROMPT

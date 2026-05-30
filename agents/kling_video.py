@@ -68,7 +68,7 @@ class KlingVideoGenerator:
         payload = {
             "model_name": "kling-v1",
             "prompt": clean_prompt,
-            "negative_prompt": "text, words, subtitles, captions, speech bubbles, dialogue, letters, numbers, watermark, logo, realistic, photorealistic, scary, horror, dark, ugly, distorted face, extra limbs, extra fingers, blurry, low quality, deformed, mutated, disfigured",
+            "negative_prompt": "text, words, subtitles, captions, speech bubbles, letters, numbers, watermark, logo, realistic, photorealistic, scary, horror, dark, face morphing, outfit change, hair color change, extra limbs, extra fingers, floating hands, blurry, low quality, deformed, disfigured, plastic skin",
             "duration": str(duration),
             "aspect_ratio": "9:16",
             "mode": "pro",
