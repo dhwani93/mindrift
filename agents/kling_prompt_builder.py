@@ -24,30 +24,38 @@ CHARACTER VISUAL REFERENCES:
 - SENIOR DOG: Older gray-muzzled labrador or mixed breed, tired eyes, dignified posture, lying down often
 - KITTEN: Small gray/tabby kitten, huge round eyes, oversized energy, tiny but overconfident body language
 
-SHOT TYPES THAT WORK FOR PET COMEDY:
-- Direct-to-camera stare (pet looking into lens with judgment/confusion/concern)
-- Reaction shot (pet reacting to something offscreen — head tilt, ear perk, slow blink)
-- Over-shoulder (pet looking at a laptop, phone, document, or human activity)
-- Walking away (pet leaving dramatically after delivering truth)
-- Sitting beside object (pet next to bills, laptop, suitcase, food bowl — contextual)
-- Paw on object (pet's paw resting on keyboard, document, phone)
+VISUAL STYLE: 3D CARTOON / ANIMATED — NOT PHOTOREALISTIC.
+Think Pixar, Illumination, DreamWorks style. Cute, expressive, exaggerated features.
+Big eyes, round faces, smooth textures. Fun and colorful, not uncanny valley.
+
+CHARACTER VISUAL REFERENCES:
+- ORANGE CAT: Chubby round orange tabby, huge green eyes, smug expression, Garfield-meets-Puss-in-Boots energy
+- GOLDEN RETRIEVER: Big fluffy golden retriever, oversized puppy eyes, dopey lovable face, always slightly worried
+- SENIOR DOG: Gray-muzzled old labrador, droopy wise eyes, reading glasses optional, dignified tired energy
+- KITTEN: Tiny gray tabby kitten, enormous round eyes, way too much confidence for its size
+
+SHOT TYPES:
+- Direct-to-camera stare with exaggerated expression
+- Reaction shot with big cartoon eye movements
+- Over-shoulder looking at a human object (laptop, bills, phone)
+- Dramatic walk-away with tail swish
+- Paw slam on desk/table
 
 EVERY PROMPT MUST START WITH:
-"[DURATION]-second vertical 9:16 cinematic AI video."
+"[DURATION]-second vertical 9:16 3D animated cartoon video."
 
-THEN INCLUDE ALL OF THESE:
-1. CHARACTER: which animal, what they look like, their expression/emotion
-2. SETTING: specific room, furniture, props, time of day, lighting
-3. ACTION: what the animal is doing (staring, tilting head, slow blink, walking, sitting)
-4. CAMERA: movement (slow push-in, static, slight orbit, pull-back), angle (eye-level with pet, low angle, slightly above)
-5. MOOD: warm home lighting, soft afternoon sun, cozy, comedic timing feel
-6. SAFETY: "No text, no captions, no distorted anatomy, no extra limbs, realistic but slightly stylized social media pet video."
+THEN INCLUDE:
+1. CHARACTER: which cartoon animal, their exaggerated expression
+2. SETTING: colorful cartoon room, simple clean backgrounds
+3. ACTION: one clear exaggerated movement
+4. CAMERA: simple movement (slow push-in, static, slight tilt)
+5. STYLE: "3D animated cartoon style, Pixar-like quality, soft lighting, vibrant colors, expressive character animation. No text, no captions, no extra limbs."
 
 GOOD PROMPT:
-"5-second vertical 9:16 cinematic AI video. An expressive orange tabby cat sits on a beige linen couch in a cozy sunlit apartment living room, staring directly at the camera with narrowed judgmental eyes and a subtle slow blink. Warm afternoon window light casting soft shadows, potted plant visible in background, cream-colored walls. The cat's posture is upright and regal, chin slightly raised. Camera: static with very slow push-in (barely perceptible). The cat looks like it is silently judging everything about your life choices. No text, no captions, no distorted face, no extra limbs, realistic but slightly stylized social media pet video."
+"5-second vertical 9:16 3D animated cartoon video. A chubby orange tabby cat with huge judgmental green eyes sits on a teal couch in a bright colorful apartment, staring directly at the camera with one eyebrow raised and a smug half-smile. The cat's arms are crossed. Warm soft cartoon lighting, clean simple background with a potted plant and window. Camera: static with very slow push-in. 3D animated cartoon style, Pixar-like quality, soft lighting, vibrant colors, expressive character animation. No text, no captions, no extra limbs."
 
 BAD PROMPT:
-"A cat sitting on a couch looking at the camera" (way too vague — what kind of cat? what couch? what expression? what lighting?)
+"A realistic cat sitting on a couch" (wrong style, too vague)
 
 OUTPUT FORMAT — valid JSON:
 {
