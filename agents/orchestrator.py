@@ -173,68 +173,88 @@ class Orchestrator:
             logger.info(f"  Chosen: '{chosen_seed.title}' ({chosen_seed.character})")
 
             # ============================================
-            # STEP 2: Generate script (FREE)
+            # STEP 2 + GATE 1: Generate script → approve (retries up to 3x)
             # ============================================
-            logger.info("[2/7] Generating script...")
-            scored = scorer.score_and_pick(chosen_seed, modifier=modifier)
-            logger.info(f"  Best: {scored.tone} ({scored.total_score})")
+            scored = None
+            for attempt in range(3):
+                logger.info(f"[2/7] Generating script (attempt {attempt + 1}/3)...")
+                scored = scorer.score_and_pick(chosen_seed, modifier=modifier)
+                logger.info(f"  Best: {scored.tone} ({scored.total_score})")
 
-            # ============================================
-            # GATE 1: APPROVE SCRIPT (before spending money)
-            # ============================================
-            logger.info("[3/7] Sending script for approval...")
-            script_msg = (
-                f"📝 Script for: \"{chosen_seed.title}\"\n"
-                f"Character: {chosen_seed.character.replace('_', ' ').title()}\n"
-                f"Tone: {scored.tone}\n\n"
-                f"---\n"
-                f"{scored.script}\n"
-                f"---\n\n"
-                f"Reply YES to approve, NO to skip."
-            )
-            telegram.send_message(script_msg)
+                script_msg = (
+                    f"📝 Script for: \"{chosen_seed.title}\" (attempt {attempt + 1}/3)\n"
+                    f"Character: {chosen_seed.character.replace('_', ' ').title()}\n"
+                    f"Tone: {scored.tone}\n\n"
+                    f"---\n"
+                    f"{scored.script}\n"
+                    f"---\n\n"
+                    f"Reply YES to approve, NO to regenerate."
+                )
+                telegram.send_message(script_msg)
 
-            if not dry_run:
+                if dry_run:
+                    break
+
                 script_approval = telegram.wait_for_approval(timeout_minutes=60)
-                if script_approval is not True:
-                    logger.info("  Script rejected or timed out. Stopping.")
-                    telegram.send_message("⏭️ Skipped. Try again tomorrow!")
+                if script_approval is True:
+                    logger.info("  ✅ Script approved!")
+                    break
+                elif script_approval is False:
+                    logger.info(f"  ❌ Script rejected. {'Regenerating...' if attempt < 2 else 'Last attempt used.'}")
+                    if attempt < 2:
+                        telegram.send_message("🔄 Regenerating script...")
+                        modifier = (modifier + " make it funnier and more relatable").strip()
+                    else:
+                        telegram.send_message("⏭️ 3 attempts used. Skipping today.")
+                        summary["status"] = "skipped"
+                        return summary
+                else:
+                    telegram.send_message("⏰ No response. Skipping.")
                     summary["status"] = "skipped"
                     return summary
-                logger.info("  ✅ Script approved!")
 
             # ============================================
-            # STEP 4: Generate Kling prompts (FREE)
+            # STEP 4 + GATE 2: Generate Kling prompts → approve (retries up to 3x)
             # ============================================
-            logger.info("[4/7] Building Kling prompts...")
-            # Always 20s max — 3 clips × 5 seconds
+            clips = None
             target_length = self.config["content"]["max_video_duration_sec"]
-            clips = prompt_builder.build_prompts(
-                script=scored.script,
-                character=chosen_seed.character,
-                visual_direction=scored.visual_direction,
-                target_length_sec=target_length,
-            )
+            forced_duration = 5 if target_length <= 20 else 10
 
-            # ============================================
-            # GATE 2: APPROVE KLING PROMPTS (before spending money)
-            # ============================================
-            logger.info("[5/7] Sending Kling prompts for approval...")
-            prompts_msg = "🎬 Video prompts:\n\n"
-            for c in clips:
-                prompts_msg += f"Clip {c['clip_number']} ({c['duration_sec']}s): {c['purpose']}\n"
-                prompts_msg += f"→ {c['prompt'][:200]}...\n\n"
-            prompts_msg += "Reply YES to generate videos, NO to skip."
-            telegram.send_message(prompts_msg)
+            for attempt in range(3):
+                logger.info(f"[4/7] Building Kling prompts (attempt {attempt + 1}/3)...")
+                clips = prompt_builder.build_prompts(
+                    script=scored.script,
+                    character=chosen_seed.character,
+                    visual_direction=scored.visual_direction,
+                    target_length_sec=target_length,
+                )
 
-            if not dry_run:
+                prompts_msg = f"🎬 Video prompts (attempt {attempt + 1}/3):\n\n"
+                for c in clips:
+                    prompts_msg += f"Clip {c['clip_number']} ({forced_duration}s): {c['purpose']}\n"
+                    prompts_msg += f"→ {c['prompt'][:300]}...\n\n"
+                prompts_msg += "Reply YES to generate, NO to regenerate."
+                telegram.send_message(prompts_msg)
+
+                if dry_run:
+                    break
+
                 prompts_approval = telegram.wait_for_approval(timeout_minutes=60)
-                if prompts_approval is not True:
-                    logger.info("  Prompts rejected or timed out. Stopping.")
-                    telegram.send_message("⏭️ Skipped. No credits used!")
+                if prompts_approval is True:
+                    logger.info("  ✅ Prompts approved! Spending credits now...")
+                    break
+                elif prompts_approval is False:
+                    logger.info(f"  ❌ Prompts rejected. {'Regenerating...' if attempt < 2 else 'Last attempt.'}")
+                    if attempt < 2:
+                        telegram.send_message("🔄 Regenerating prompts with more detail...")
+                    else:
+                        telegram.send_message("⏭️ 3 attempts used. No credits spent. Skipping.")
+                        summary["status"] = "skipped"
+                        return summary
+                else:
+                    telegram.send_message("⏰ No response. Skipping.")
                     summary["status"] = "skipped"
                     return summary
-                logger.info("  ✅ Prompts approved! Now spending credits...")
 
             # ============================================
             # STEP 6: GENERATE (costs money — only after 2 approvals)
@@ -285,7 +305,6 @@ class Orchestrator:
             # Kling clips
             video_path = output_dir / "video.mp4"
             clip_paths = []
-            forced_duration = 5 if chosen_seed.recommended_length_sec <= 20 else 10
             for clip in clips:
                 clip_path = output_dir / f"clip_{clip['clip_number']:02d}.mp4"
                 logger.info(f"  Clip {clip['clip_number']}: {forced_duration}s")
