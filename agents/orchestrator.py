@@ -229,10 +229,12 @@ class Orchestrator:
 
             video_path = output_dir / "video.mp4"
             clip_paths = []
+            # Force 5s clips for 20s videos, regardless of what Claude says
+            forced_duration = 5 if chosen_seed.recommended_length_sec <= 20 else 10
             for clip in clips:
                 clip_path = output_dir / f"clip_{clip['clip_number']:02d}.mp4"
-                logger.info(f"  Clip {clip['clip_number']}: {clip['duration_sec']}s — {clip['purpose'][:60]}")
-                kling.generate(clip["prompt"], clip_path, duration=clip["duration_sec"])
+                logger.info(f"  Clip {clip['clip_number']}: {forced_duration}s — {clip['purpose'][:60]}")
+                kling.generate(clip["prompt"], clip_path, duration=forced_duration)
                 clip_paths.append(clip_path)
 
             # Stitch clips
