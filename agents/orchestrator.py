@@ -34,27 +34,54 @@ class Orchestrator:
         if result.returncode != 0:
             raise RuntimeError(f"FFmpeg failed ({description}): {result.stderr[-200:]}")
 
-    def _add_title_card(self, input_path: Path, output_path: Path, title: str, duration: float) -> None:
-        """Add title text on screen for the first 3 seconds of the video."""
+    def _add_text_overlays(self, input_path: Path, output_path: Path, title: str, script: str, duration: float) -> None:
+        """Add title at top (persistent) + word-by-word subtitles at bottom."""
         safe_title = title.replace("'", "\u2019").replace(":", "\\:").replace("\\", "")
-        # Show title for first 3 seconds, centered, large white text with black outline
+
+        # Build subtitle chunks from script (3 words at a time)
+        clean_script = re.sub(r'\[.*?\]', '', script).strip()
+        words = clean_script.split()
+        chunk_size = 3
+        chunks = []
+        for j in range(0, len(words), chunk_size):
+            chunks.append(" ".join(words[j:j + chunk_size]))
+
+        # Build filter chain
+        filters = []
+
+        # Title at top — visible entire video
+        filters.append(
+            f"drawtext=text='{safe_title}'"
+            ":fontsize=52:fontcolor=white:borderw=4:bordercolor=black"
+            ":x=(w-text_w)/2:y=h*0.08"
+        )
+
+        # Subtitles at bottom — word by word
+        if chunks:
+            time_per_chunk = duration / len(chunks)
+            for idx, chunk in enumerate(chunks):
+                start = idx * time_per_chunk
+                end = (idx + 1) * time_per_chunk
+                safe_chunk = chunk.replace("'", "\u2019").replace(":", "\\:").replace("\\", "")
+                filters.append(
+                    f"drawtext=text='{safe_chunk}'"
+                    f":fontsize=44:fontcolor=yellow:borderw=3:bordercolor=black"
+                    f":x=(w-text_w)/2:y=h*0.82"
+                    f":enable='between(t,{start:.2f},{end:.2f})'"
+                )
+
         cmd = [
             "ffmpeg", "-y",
             "-i", str(input_path),
-            "-vf", (
-                f"drawtext=text='{safe_title}'"
-                ":fontsize=56:fontcolor=white:borderw=4:bordercolor=black"
-                ":x=(w-text_w)/2:y=h*0.15"
-                ":enable='between(t,0,3)'"
-            ),
+            "-vf", ",".join(filters),
             "-c:v", "libx264", "-preset", "fast", "-crf", "23",
             "-c:a", "copy", "-pix_fmt", "yuv420p",
             str(output_path),
         ]
         try:
-            self._run_ffmpeg(cmd, "title_card")
-        except RuntimeError:
-            # drawtext not available — just copy the file
+            self._run_ffmpeg(cmd, "text_overlays")
+        except RuntimeError as e:
+            logger.warning(f"Text overlays failed: {e}")
             import shutil
             shutil.copy2(input_path, output_path)
 
@@ -277,11 +304,11 @@ class Orchestrator:
                 for p in clip_paths:
                     p.unlink(missing_ok=True)
 
-            # Merge video + audio, then add title card
+            # Merge video + audio, then add title + subtitles
             merged_path = output_dir / "merged.mp4"
             final_path = output_dir / "final.mp4"
             self._merge_video_audio(video_path, audio_path, merged_path, audio_duration)
-            self._add_title_card(merged_path, final_path, chosen_seed.title, audio_duration)
+            self._add_text_overlays(merged_path, final_path, chosen_seed.title, clean_script, audio_duration)
             merged_path.unlink(missing_ok=True)
 
             # ============================================
