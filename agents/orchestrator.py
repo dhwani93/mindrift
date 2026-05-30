@@ -205,10 +205,10 @@ class Orchestrator:
                 detailed_prompts = prompt_builder.build_prompts(thought.text, thought.visual_scenes)
 
                 num_scenes = len(detailed_prompts)
-                logger.info(f"  Generating {num_scenes} Kling video clips...")
+                logger.info(f"  Generating {num_scenes} Kling video clips (5s each)...")
                 video_path = output_dir / f"video_{i:02d}.mp4"
 
-                secs_per_clip = 10  # Always 10s per clip
+                secs_per_clip = 5  # 5s clips for higher quality
 
                 clip_paths = []
                 for s_idx, scene_prompt in enumerate(detailed_prompts):

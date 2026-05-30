@@ -83,11 +83,14 @@ RESPOND WITH JSON:
   ]
 }
 
-Generate exactly 2 scenes. Each scene will be a 10-second Kling video clip.
-Scene 1 = the approach/establishing shot.
-Scene 2 = the reveal/payoff shot.
+Generate exactly 4 scenes. Each scene will be a 5-second Kling video clip. Shorter clips = higher quality from Kling.
+Scene 1 = wide establishing shot (sets the world)
+Scene 2 = approach/movement shot (getting closer, building tension)
+Scene 3 = discovery shot (the reveal, the "wait what" moment)
+Scene 4 = payoff shot (the grand visual, jaw-drop, show full scale)
 
-DO NOT hold back on detail. The more specific you are, the better the video. There is no such thing as too much detail for Kling."""
+DO NOT hold back on detail. The more specific you are, the better the video. There is no such thing as too much detail for Kling.
+Each prompt should be 150-300 words. Focus on what can happen in 5 seconds — one clear camera move, one clear subject, one clear moment."""
 
 
 class KlingPromptBuilder:

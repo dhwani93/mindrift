@@ -117,11 +117,14 @@ BAD PROMPTS THAT PRODUCE GARBAGE:
 - "Futuristic technology" → WHAT TECHNOLOGY? A hologram? A hovering car? A neural interface? Be SPECIFIC.
 - "The concept of time" → Kling CANNOT film concepts. Describe a PHYSICAL SCENE.
 
-Each scene = one 10-second Kling video clip. Generate exactly 2 scenes that create a visual journey:
-- Scene 1: The approach — the establishing shot, what you see first, the hint that something is different
-- Scene 2: The reveal — going closer or inside, the grand visual payoff that makes the viewer's jaw drop
+Each scene = one 5-second Kling video clip. Generate exactly 4 scenes that create a visual journey:
+- Scene 1: The establishing shot — wide, sets the world, the first thing the viewer sees
+- Scene 2: The approach — moving closer, something feels off, building tension
+- Scene 3: The discovery — the reveal, the moment everything changes
+- Scene 4: The payoff — the grand visual, the jaw-drop moment, pull back to show scale
 
-DO NOT generate 3 scenes. Always exactly 2.
+Shorter clips = higher quality from Kling. 4 clips × 5 seconds = 20 seconds total.
+Always exactly 4 scenes.
 
 Generate 1 thought. Make it SPECIFIC, VISUAL, and MIND-BENDING."""
 

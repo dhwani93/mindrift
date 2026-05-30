@@ -70,7 +70,7 @@ class KlingVideoGenerator:
             "prompt": clean_prompt,
             "duration": str(duration),
             "aspect_ratio": "9:16",
-            "mode": "std",
+            "mode": "pro",
         }
 
         response = requests.post(
