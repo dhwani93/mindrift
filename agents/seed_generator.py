@@ -66,7 +66,7 @@ OUTPUT FORMAT — respond with valid JSON:
   "seeds": [
     {
       "rank": 1,
-      "title": "Cat Discovers Rent",
+      "title": "Cat Discovers Rent (3-4 words MAX for title, always)",
       "character": "orange_cat",
       "topic": "rent",
       "bucket": "adulting",

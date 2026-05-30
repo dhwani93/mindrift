@@ -347,12 +347,9 @@ class Orchestrator:
                 for p in clip_paths:
                     p.unlink(missing_ok=True)
 
-            # Merge video + audio, then add title + subtitles
-            merged_path = output_dir / "merged.mp4"
+            # Merge video + audio (no captions — user adds on YouTube)
             final_path = output_dir / "final.mp4"
-            self._merge_video_audio(video_path, audio_path, merged_path, audio_duration)
-            self._add_text_overlays(merged_path, final_path, chosen_seed.title, clean_script, audio_duration)
-            merged_path.unlink(missing_ok=True)
+            self._merge_video_audio(video_path, audio_path, final_path, audio_duration)
 
             # ============================================
             # GATE 3: APPROVE FINAL VIDEO

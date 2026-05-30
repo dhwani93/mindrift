@@ -52,25 +52,9 @@ class YouTubeUploader:
         self._youtube = build("youtube", "v3", credentials=credentials)
         return self._youtube
 
-    def _get_publish_time(self, is_short: bool = False, short_index: int = 0) -> str:
-        """Calculate the scheduled publish time in ISO 8601 format."""
-        now = datetime.utcnow()
-
-        if is_short:
-            # Shorts are staggered through the day
-            times = self.channel_config["shorts_times_utc"]
-            time_str = times[short_index % len(times)]
-        else:
-            time_str = self.channel_config["upload_time_utc"]
-
-        hour, minute = map(int, time_str.split(":"))
-
-        # Schedule for today if time hasn't passed, otherwise tomorrow
-        publish = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
-        if publish <= now:
-            publish += timedelta(days=1)
-
-        return publish.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    def _get_publish_time(self, is_short: bool = False, short_index: int = 0) -> str | None:
+        """Return None to publish immediately as public."""
+        return None
 
     @retry(max_attempts=5, base_delay=10.0, max_delay=120.0)
     def _upload_video(

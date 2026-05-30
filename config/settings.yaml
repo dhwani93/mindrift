@@ -13,7 +13,7 @@ voice:
   # Character-specific voices
   characters:
     orange_cat:
-      voice_id: "Xb7hH8MSUJpSbSDYk0k2"  # Alice - Clear, Engaging (sassy fits cat)
+      voice_id: "iP95p4xoKVk53GoZ742B"   # Chris - Charming, Down-to-Earth, American
       stability: 0.45
       similarity_boost: 0.80
       style: 0.40
