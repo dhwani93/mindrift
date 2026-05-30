@@ -38,8 +38,10 @@ class Orchestrator:
         """Add title at top (persistent) + word-by-word subtitles at bottom."""
         safe_title = title.replace("'", "\u2019").replace(":", "\\:").replace("\\", "")
 
-        # Build subtitle chunks from script (3 words at a time)
-        clean_script = re.sub(r'\[.*?\]', '', script).strip()
+        # Strip ALL markers before building captions
+        clean_script = re.sub(r'\[PAUSE[^\]]*\]', '', script)
+        clean_script = re.sub(r'\[.*?\]', '', clean_script)
+        clean_script = re.sub(r'\s+', ' ', clean_script).strip()
         words = clean_script.split()
         chunk_size = 3
         chunks = []

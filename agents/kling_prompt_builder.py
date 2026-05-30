@@ -82,18 +82,20 @@ EXPRESSION KEYWORDS:
 - Confused: "head tilted, one ear flopped, squinting"
 - Smug: "half-closed eyes, slight smile, leaning back"
 
-GOOD PROMPT (35 words):
-"Slow push-in. Chubby orange tabby cat with huge green eyes sits on teal couch, one eyebrow raised, arms crossed, judgmental stare at camera. Bright apartment, afternoon sunlight. Warm 3D storybook cartoon, cinematic 4K."
+GOOD PROMPT (38 words):
+"Static medium shot. Chubby orange tabby cat with huge green eyes sits on teal couch in bright apartment living room, potted plants and bookshelf visible behind. One eyebrow raised, arms crossed. Afternoon sunlight through window. Warm 3D storybook cartoon, cinematic 4K."
 
 BAD PROMPT (too long, 100+ words):
 "A 5-second vertical 9:16 3D Pixar style animated cartoon video featuring a chubby fluffy orange tabby cat with enormous expressive bright green eyes and a round face with an oversized head sitting on a teal colored couch in a bright colorful cartoon apartment living room..."
 (This is WAY too long. Kling gets confused. Cut it to 35-40 words.)
 
 CAMERA OPTIONS (pick ONE per clip):
-- "Slow push-in." (hook shot — builds intimacy)
-- "Static wide shot." (context shot — shows character + environment)
-- "Slight pull-back." (reveal shot — shows aftermath)
-- "Low angle looking up." (power shot — character dominance)
+- "Static medium shot, character visible from waist up with room visible around them." (hook shot — shows character AND environment)
+- "Static wide shot showing full room with character sitting in it." (context shot — establishes the world)
+- "Slight pull-back revealing full room." (reveal shot — shows aftermath)
+- "Low angle looking up, room ceiling visible." (power shot — character dominance)
+
+FRAMING RULE: NEVER do extreme close-up on just the face. ALWAYS show at least waist-up AND the room/environment around the character. The setting is part of the comedy — a cat sitting on a couch in a real apartment is funnier than a floating cat head.
 
 ONE ACTION PER CLIP. Do not combine multiple movements.
 
@@ -133,9 +135,9 @@ CHARACTER: {char_desc}
 SCRIPT: "{script}"
 VISUAL DIRECTION: {visual_direction}
 
-Clip 1 = HOOK: Character staring at camera with strong expression. Slow push-in.
-Clip 2 = REACTION: Character looking at or interacting with a relevant prop/object.
-Clip 3 = PUNCHLINE: Character's final reaction — walking away, dramatic gesture, or deadpan stare.
+Clip 1 = HOOK: Medium shot — character in their environment, expression visible, room visible around them.
+Clip 2 = REACTION: Wide shot — character interacting with relevant prop/object, full room visible.
+Clip 3 = PUNCHLINE: Medium shot — character's final reaction, walking away or dramatic gesture, environment visible.
 
 Each prompt MUST be under 40 words. Use the formula: Camera + Character + Expression + Action + Setting + "warm 3D storybook cartoon, soft lighting, cinematic 4K"
 
