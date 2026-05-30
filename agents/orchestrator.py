@@ -105,35 +105,44 @@ class Orchestrator:
             uploader = YouTubeUploader()
             telegram = TelegramBot()
 
-            # === STEP 1: Generate and send seeds ===
-            logger.info("[1/6] Generating episode seeds...")
+            # === STEP 1: Get seed (file → Telegram → generate & ask) ===
+            logger.info("[1/6] Getting episode seed...")
 
-            # Check if user already sent a reply (from earlier Telegram)
-            user_reply = telegram.get_latest_message(max_age_hours=3)
+            user_reply = None
+            seed_file = Path(__file__).parent.parent / "data" / "daily_seed.txt"
 
-            if user_reply:
-                logger.info(f"  User already replied: {user_reply[:60]}")
-            else:
-                # Generate seeds and send to Telegram
+            # Priority 1: Check seed file (from workflow_dispatch input)
+            if seed_file.exists():
+                file_seed = seed_file.read_text().strip()
+                if file_seed:
+                    seed_file.write_text("")
+                    user_reply = file_seed
+                    logger.info(f"  Seed from file: {user_reply[:60]}")
+
+            # Priority 2: Check Telegram for recent reply (from morning seeds)
+            if not user_reply:
+                user_reply = telegram.get_latest_message(max_age_hours=3)
+                if user_reply:
+                    logger.info(f"  Seed from Telegram: {user_reply[:60]}")
+
+            # Priority 3: Generate seeds, send to Telegram, wait
+            if not user_reply:
                 seeds = seed_gen.generate_seeds()
                 formatted = seed_gen.format_for_telegram(seeds)
                 telegram.send_seeds(formatted)
-                logger.info("  Seeds sent to Telegram. Waiting for reply (30 min)...")
+                logger.info("  Seeds sent to Telegram. Waiting 30 min for reply...")
 
-                # Wait for user reply
-                user_reply = None
-                # Poll for reply
                 import time
                 start = time.time()
-                while time.time() - start < 1800:  # 30 min
+                while time.time() - start < 1800:
                     msg = telegram.get_latest_message(max_age_hours=0.5)
                     if msg:
                         user_reply = msg
                         break
                     time.sleep(10)
 
-            # === STEP 2: Parse user choice ===
-            logger.info("[2/6] Parsing user choice...")
+            # === STEP 2: Parse choice and select seed ===
+            logger.info("[2/6] Selecting seed...")
 
             if user_reply:
                 parsed = telegram.parse_seed_reply(user_reply)
@@ -142,12 +151,11 @@ class Orchestrator:
                 logger.info("  No reply — using top seed")
                 parsed = {"seed_number": 1, "modifier": None, "custom_idea": None}
 
-            # Get or generate the seeds if we don't have them
-            if 'seeds' not in dir():
-                seeds = seed_gen.generate_seeds()
+            # Generate seeds if we don't have them yet
+            if "seeds" not in dir():
+                seeds = seed_gen.generate_seeds(bias=user_reply if parsed.get("custom_idea") else "")
 
             if parsed.get("custom_idea"):
-                # User typed their own idea — generate a seed from it
                 custom_seeds = seed_gen.generate_seeds(bias=parsed["custom_idea"])
                 chosen_seed = custom_seeds[0]
             elif parsed.get("seed_number"):
