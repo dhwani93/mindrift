@@ -197,7 +197,7 @@ class Orchestrator:
                 if dry_run:
                     break
 
-                script_approval = telegram.wait_for_approval(timeout_minutes=60)
+                script_approval = telegram.wait_for_approval()
                 if script_approval is True:
                     logger.info("  ✅ Script approved!")
                     break
@@ -241,7 +241,7 @@ class Orchestrator:
                 if dry_run:
                     break
 
-                prompts_approval = telegram.wait_for_approval(timeout_minutes=60)
+                prompts_approval = telegram.wait_for_approval()
                 if prompts_approval is True:
                     logger.info("  ✅ Prompts approved! Spending credits now...")
                     break
@@ -365,7 +365,7 @@ class Orchestrator:
                 sent = telegram.send_video_for_approval(str(final_path), title, scored.script, audio_duration)
 
                 if sent:
-                    approval = telegram.wait_for_approval(timeout_minutes=30)
+                    approval = telegram.wait_for_approval()
                     if approval is True:
                         logger.info("  ✅ Uploading!")
                         uploader.run(
