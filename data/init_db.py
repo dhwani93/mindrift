@@ -1,4 +1,4 @@
-"""Initialize the SQLite database schema for Mindrift."""
+"""Initialize the SQLite database schema for Paws & Opinions."""
 
 import sqlite3
 from pathlib import Path

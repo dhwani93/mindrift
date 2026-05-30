@@ -1,4 +1,4 @@
-"""Mindrift — Daily Video Pipeline.
+"""Paws & Opinions — Daily Video Pipeline.
 
 Usage:
     python main.py                    # Full pipeline with Telegram approval
@@ -34,14 +34,14 @@ def setup_logging(run_date: str) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Mindrift — Daily Pipeline")
+    parser = argparse.ArgumentParser(description="Paws & Opinions — Daily Pipeline")
     parser.add_argument("--date", type=str, default=date.today().isoformat())
     parser.add_argument("--dry-run", action="store_true", help="Generate but don't upload")
     args = parser.parse_args()
 
     setup_logging(args.date)
     logger = logging.getLogger("main")
-    logger.info(f"Mindrift Pipeline — {args.date}")
+    logger.info(f"Paws & Opinions Pipeline — {args.date}")
 
     from agents.orchestrator import Orchestrator
 

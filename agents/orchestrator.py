@@ -251,7 +251,7 @@ class Orchestrator:
 
             # === STEP 6: Telegram approval → Upload ===
             title = chosen_seed.title
-            description = f"{scored.script[:150]}...\n\n#shorts #pets #funny #petcomedy #mindrift"
+            description = f"{scored.script[:150]}...\n\n#shorts #pets #funny #petcomedy #pawsandopinions"
             tags = self.config["seo"]["default_tags"] + [chosen_seed.character.replace("_", " "), chosen_seed.topic]
 
             if dry_run:

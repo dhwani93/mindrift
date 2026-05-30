@@ -1,4 +1,4 @@
-# Mindrift — Pet POV Comedy Video Pipeline
+# Paws & Opinions — Pet POV Comedy Video Pipeline
 
 ## What This Is
 Automated short-form video pipeline producing pet-POV comedy content. Tiny animals explain human problems with dramatic confidence.

@@ -1,4 +1,4 @@
-"""MCP Server for Mindrift asset library.
+"""MCP Server for Paws & Opinions asset library.
 
 Browse and search local music, SFX, and cached images.
 Run with: python -m mcp_servers.asset_server
@@ -12,7 +12,7 @@ from mcp.server.fastmcp import FastMCP
 ASSETS_DIR = Path(__file__).parent.parent / "assets"
 DB_PATH = Path(__file__).parent.parent / "data" / "content.db"
 
-mcp = FastMCP("Mindrift — Asset Library")
+mcp = FastMCP("Paws & Opinions — Asset Library")
 
 
 @mcp.tool()

@@ -1,4 +1,4 @@
-"""MCP Server for Mindrift content database.
+"""MCP Server for Paws & Opinions content database.
 
 Allows conversational interaction with the content tracking database.
 Run with: python -m mcp_servers.content_db_server
@@ -11,7 +11,7 @@ from mcp.server.fastmcp import FastMCP
 
 DB_PATH = Path(__file__).parent.parent / "data" / "content.db"
 
-mcp = FastMCP("Mindrift — Content DB")
+mcp = FastMCP("Paws & Opinions — Content DB")
 
 
 def _query(sql: str, params: tuple = ()) -> list[dict]:
