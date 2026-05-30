@@ -50,6 +50,16 @@ BAD SCRIPT — too fancy, too long:
 "The economic implications of domicile monetization have become apparent to me. As the primary occupant of this residence, I find the concept of recurring payments fundamentally flawed..."
 (This is garbage. No one talks like this. Especially not a cat.)
 
+IMPORTANT: The video title (like "Cat Discovers Taxes") will be shown on screen for the first 3 seconds. So the script does NOT need to explain what the topic is. Jump straight into the REACTION. The viewer already knows the context from the title.
+
+GOOD (title gives context, script is pure reaction):
+Title: "Cat Discovers Taxes"
+Script: "Hold on. They take HOW much? And you just... let them? Every year?? I would've knocked something off a shelf by now."
+
+BAD (script wastes time explaining):
+"So I just learned about this thing called taxes. Apparently the government takes your money..."
+(The title already told them it's about taxes! Don't waste lines explaining!)
+
 REMEMBER: Write like a pet making a TikTok reaction video, NOT like a writer crafting literature.
 
 CHARACTER VOICES:

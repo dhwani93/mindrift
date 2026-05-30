@@ -34,6 +34,30 @@ class Orchestrator:
         if result.returncode != 0:
             raise RuntimeError(f"FFmpeg failed ({description}): {result.stderr[-200:]}")
 
+    def _add_title_card(self, input_path: Path, output_path: Path, title: str, duration: float) -> None:
+        """Add title text on screen for the first 3 seconds of the video."""
+        safe_title = title.replace("'", "\u2019").replace(":", "\\:").replace("\\", "")
+        # Show title for first 3 seconds, centered, large white text with black outline
+        cmd = [
+            "ffmpeg", "-y",
+            "-i", str(input_path),
+            "-vf", (
+                f"drawtext=text='{safe_title}'"
+                ":fontsize=56:fontcolor=white:borderw=4:bordercolor=black"
+                ":x=(w-text_w)/2:y=h*0.15"
+                ":enable='between(t,0,3)'"
+            ),
+            "-c:v", "libx264", "-preset", "fast", "-crf", "23",
+            "-c:a", "copy", "-pix_fmt", "yuv420p",
+            str(output_path),
+        ]
+        try:
+            self._run_ffmpeg(cmd, "title_card")
+        except RuntimeError:
+            # drawtext not available — just copy the file
+            import shutil
+            shutil.copy2(input_path, output_path)
+
     def _merge_video_audio(self, video_path: Path, audio_path: Path, output_path: Path, duration: float) -> None:
         cmd = [
             "ffmpeg", "-y",
@@ -253,9 +277,12 @@ class Orchestrator:
                 for p in clip_paths:
                     p.unlink(missing_ok=True)
 
-            # Merge video + audio (no captions — they were broken)
+            # Merge video + audio, then add title card
+            merged_path = output_dir / "merged.mp4"
             final_path = output_dir / "final.mp4"
-            self._merge_video_audio(video_path, audio_path, final_path, audio_duration)
+            self._merge_video_audio(video_path, audio_path, merged_path, audio_duration)
+            self._add_title_card(merged_path, final_path, chosen_seed.title, audio_duration)
+            merged_path.unlink(missing_ok=True)
 
             # ============================================
             # GATE 3: APPROVE FINAL VIDEO
