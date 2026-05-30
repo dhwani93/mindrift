@@ -1,4 +1,4 @@
-"""Kling Prompt Builder — uses Claude to generate ultra-detailed video prompts."""
+"""Kling Prompt Builder — generates ultra-detailed pet-POV video prompts."""
 
 import json
 import logging
@@ -14,87 +14,58 @@ logger = logging.getLogger(__name__)
 
 CONFIG_PATH = Path(__file__).parent.parent / "config" / "settings.yaml"
 
-SYSTEM_PROMPT = """You are a world-class cinematographer and production designer writing video generation prompts for Kling AI.
+SYSTEM_PROMPT = """You are a cinematographer creating shot-by-shot prompts for Kling AI video generation. You are making short pet-POV comedy videos.
 
-Your job: take a rough scene description and expand it into an ULTRA-DETAILED prompt that Kling AI can render into a stunning 10-second video clip. Kling renders EXACTLY what you describe — every detail you add makes the video better. Every detail you omit is left to chance.
+Kling renders EXACTLY what you describe. Be hyper-specific about every visual detail.
 
-You must write like you're briefing a VFX team building a shot for a $200M film. Leave NOTHING to interpretation.
+CHARACTER VISUAL REFERENCES:
+- ORANGE CAT: Orange tabby cat, expressive green eyes, fluffy, sits/stands with confident posture
+- GOLDEN RETRIEVER: Golden retriever, warm brown eyes, slightly tilted head, earnest expression
+- SENIOR DOG: Older gray-muzzled labrador or mixed breed, tired eyes, dignified posture, lying down often
+- KITTEN: Small gray/tabby kitten, huge round eyes, oversized energy, tiny but overconfident body language
 
-YOUR PROMPT MUST COVER ALL OF THESE IN EXTREME DETAIL:
+SHOT TYPES THAT WORK FOR PET COMEDY:
+- Direct-to-camera stare (pet looking into lens with judgment/confusion/concern)
+- Reaction shot (pet reacting to something offscreen — head tilt, ear perk, slow blink)
+- Over-shoulder (pet looking at a laptop, phone, document, or human activity)
+- Walking away (pet leaving dramatically after delivering truth)
+- Sitting beside object (pet next to bills, laptop, suitcase, food bowl — contextual)
+- Paw on object (pet's paw resting on keyboard, document, phone)
 
-## 1. CAMERA (be specific about movement, speed, angle, lens)
-- Type: steadicam, aerial drone, crane, dolly, handheld, locked tripod, orbiting
-- Movement: direction, speed (slow crawl, walking pace, sweeping), path (linear, arc, descending)
-- Angle: low angle looking up, eye level, bird's eye, dutch angle, over-the-shoulder
-- Lens feel: wide angle (shows scale), telephoto (compression, intimacy), macro (extreme detail)
+EVERY PROMPT MUST START WITH:
+"[DURATION]-second vertical 9:16 cinematic AI video."
 
-## 2. ENVIRONMENT (build the world in exhaustive detail)
-For cities/civilizations:
-- Architecture: what style? (Gothic, Art Deco, Brutalist, organic, crystalline, Aztec-inspired) What materials? (obsidian, white marble, living wood, translucent crystal, rusted iron, black granite) How tall? How old? What condition? (pristine, crumbling, overgrown with vines, partially submerged)
-- Streets/pathways: what are they made of? (polished stone, glowing tiles, suspended glass bridges, cobblestone, gold-inlaid pathways) How wide? What's on them?
-- Vegetation: specific plants (bioluminescent mushrooms, hanging vines with blue flowers, enormous ferns, moss-covered everything, alien coral-like growths)
-- Water features: waterfalls, rivers, reflecting pools, fountains, underground lakes with crystal-clear water showing the bottom
-- Scale references: tiny figures walking, birds flying, vehicles/vessels for scale comparison
+THEN INCLUDE ALL OF THESE:
+1. CHARACTER: which animal, what they look like, their expression/emotion
+2. SETTING: specific room, furniture, props, time of day, lighting
+3. ACTION: what the animal is doing (staring, tilting head, slow blink, walking, sitting)
+4. CAMERA: movement (slow push-in, static, slight orbit, pull-back), angle (eye-level with pet, low angle, slightly above)
+5. MOOD: warm home lighting, soft afternoon sun, cozy, comedic timing feel
+6. SAFETY: "No text, no captions, no distorted anatomy, no extra limbs, realistic but slightly stylized social media pet video."
 
-For landscapes/nature:
-- Geology: rock types, formations, colors (red sandstone cliffs, black volcanic glass, white chalk, blue ice)
-- Weather: specific cloud types, precipitation, wind effects on vegetation/dust/water
-- Flora: species-level detail where possible, or very specific descriptions of fictional plants
+GOOD PROMPT:
+"5-second vertical 9:16 cinematic AI video. An expressive orange tabby cat sits on a beige linen couch in a cozy sunlit apartment living room, staring directly at the camera with narrowed judgmental eyes and a subtle slow blink. Warm afternoon window light casting soft shadows, potted plant visible in background, cream-colored walls. The cat's posture is upright and regal, chin slightly raised. Camera: static with very slow push-in (barely perceptible). The cat looks like it is silently judging everything about your life choices. No text, no captions, no distorted face, no extra limbs, realistic but slightly stylized social media pet video."
 
-For interiors:
-- Walls: material, texture, decorations (carved reliefs depicting what? murals showing what? mounted artifacts?)
-- Floor: material, pattern, reflections, debris
-- Ceiling: height, structure (vaulted, domed, open to sky, stalactites), what's hanging from it
-- Objects: furniture, artifacts, technology — each described with material, size, condition
+BAD PROMPT:
+"A cat sitting on a couch looking at the camera" (way too vague — what kind of cat? what couch? what expression? what lighting?)
 
-## 3. MOTION (multiple layers of movement create life)
-Layer 1 - Camera movement (described above)
-Layer 2 - Primary motion: the main moving element (a figure walking, a door opening, water flowing)
-Layer 3 - Secondary motion: environmental movement (leaves falling, dust swirling, light shifting, clouds drifting)
-Layer 4 - Subtle motion: tiny details that add life (flickering flames, dripping water, insects, cloth rippling, reflections shimmering)
-
-## 4. LIGHTING (this makes or breaks the shot)
-- Primary light source: what is it? (sun at what angle, bioluminescent organisms, artificial lamps, fire, glowing crystals, moonlight) What color? What intensity?
-- Secondary light: fill light, ambient glow, reflections off surfaces
-- Shadows: where do they fall? How sharp? What shapes do they create?
-- Atmospheric effects: volumetric fog/mist (how thick? what color?), god rays, light shafts, haze, underwater caustics
-- Color palette: dominant colors and accent colors (e.g., "cold blue-gray stone with warm amber torchlight accents")
-
-## 5. TEXTURE & SURFACE DETAIL
-- Weathering: rust, patina, erosion, moss growth, water stains, cracks, peeling paint
-- Reflections: wet surfaces, polished metal, still water, glass
-- Particles: dust motes in light beams, embers, pollen, snow, ash, floating spores
-- Material properties: translucent, matte, glossy, rough-hewn, smooth, crystalline
-
-## 6. QUALITY TAGS (always end with these)
-"cinematic photorealistic 4K HDR, shallow depth of field, anamorphic lens flare, film grain, color graded"
-
-RESPOND WITH JSON:
+OUTPUT FORMAT — valid JSON:
 {
-  "scenes": [
+  "clips": [
     {
-      "scene_number": 1,
-      "description": "The full ultra-detailed prompt (aim for 150-250 words per scene — more detail = better video)"
-    },
-    {
-      "scene_number": 2,
-      "description": "Second scene prompt, equally detailed"
+      "clip_number": 1,
+      "duration_sec": 10,
+      "purpose": "Hook shot — cat staring judgmentally at camera",
+      "prompt": "The full ultra-detailed Kling prompt (100-200 words)"
     }
   ]
 }
 
-Generate exactly 4 scenes. Each scene will be a 5-second Kling video clip. Shorter clips = higher quality from Kling.
-Scene 1 = wide establishing shot (sets the world)
-Scene 2 = approach/movement shot (getting closer, building tension)
-Scene 3 = discovery shot (the reveal, the "wait what" moment)
-Scene 4 = payoff shot (the grand visual, jaw-drop, show full scale)
-
-DO NOT hold back on detail. The more specific you are, the better the video. There is no such thing as too much detail for Kling.
-Each prompt should be 150-300 words. Focus on what can happen in 5 seconds — one clear camera move, one clear subject, one clear moment."""
+Generate clips that match the episode's visual direction and script beats."""
 
 
 class KlingPromptBuilder:
-    """Generates ultra-detailed Kling video prompts using Claude."""
+    """Generates ultra-detailed pet-POV Kling video prompts."""
 
     def __init__(self):
         with open(CONFIG_PATH) as f:
@@ -103,37 +74,38 @@ class KlingPromptBuilder:
         self.model = "claude-haiku-4-5-20251001"
 
     @retry(max_attempts=3, base_delay=2.0)
-    def build_prompts(self, thought_text: str, rough_scenes: list[str]) -> list[str]:
-        """Take rough scene descriptions and expand into ultra-detailed Kling prompts.
+    def build_prompts(self, script: str, character: str, visual_direction: str, target_length_sec: int = 35) -> list[dict]:
+        """Generate Kling prompts for a pet-POV episode.
 
         Args:
-            thought_text: The voiceover text (for context).
-            rough_scenes: Rough scene descriptions from the thought generator.
+            script: The final sharpened script.
+            character: Character type (orange_cat, golden_retriever, etc.)
+            visual_direction: Brief visual direction from comedy scorer.
+            target_length_sec: Total video length target.
 
         Returns:
-            List of ultra-detailed Kling prompts.
+            List of dicts with clip_number, duration_sec, purpose, prompt.
         """
-        scenes_text = "\n".join(f"- Scene {i+1}: {s}" for i, s in enumerate(rough_scenes))
+        # Determine clip structure based on target length
+        if target_length_sec <= 35:
+            clip_plan = "Generate exactly 3 clips: 2 × 10-second clips + 1 × 5-second clip = 25 seconds of generated video. The remaining ~10 seconds will be filled with reused/still/zoom shots in post."
+        else:
+            clip_plan = "Generate exactly 3 clips: 3 × 10-second clips = 30 seconds of generated video. The remaining ~30 seconds will be filled with reused/still/zoom shots in post."
 
-        user_prompt = f"""Expand these rough scene descriptions into ultra-detailed Kling AI video prompts.
+        user_prompt = f"""Create Kling AI video prompts for this pet-POV comedy episode.
 
-VOICEOVER CONTEXT: "{thought_text}"
+CHARACTER: {character}
+SCRIPT: "{script}"
+VISUAL DIRECTION: {visual_direction}
+TARGET LENGTH: {target_length_sec} seconds
 
-ROUGH SCENES:
-{scenes_text}
+{clip_plan}
 
-MANDATORY — EVERY scene MUST start with a camera direction line in this exact format:
-"[CAMERA TYPE] at [HEIGHT/ANGLE], moving [DIRECTION] at [SPEED], [LENS]mm lens."
+Clip 1 should be the HOOK shot — the pet's expression that makes someone stop scrolling.
+Clip 2 should be the REACTION/CONTEXT shot — the pet interacting with the relevant prop or situation.
+Clip 3 should be the PUNCHLINE shot — the pet's final expression or dramatic action (walking away, slow blink, etc.)
 
-Examples:
-"Steadicam at eye level (5.5ft), pushing forward at slow walking pace, 35mm wide lens."
-"Aerial drone at 200ft descending at 45-degree angle, sweeping left-to-right, 24mm ultra-wide lens."
-"Crane shot starting at ground level, rising vertically to 80ft, orbiting 90 degrees clockwise, 50mm lens."
-"Locked tripod at low angle (2ft), static with slow 10-degree upward tilt over 10 seconds, 85mm telephoto lens."
-
-After the camera line, describe EVERYTHING else: environment, materials, colors (with RGB), textures, motion layers (primary + secondary + ambient), lighting sources, atmospheric effects, particles, scale references.
-
-200-400 words per scene minimum. JSON only."""
+Each prompt must be 100-200 words. Be EXTREMELY specific about the animal's expression, the setting, props, lighting, and camera. JSON only."""
 
         response = self.client.messages.create(
             model=self.model,
@@ -150,16 +122,17 @@ After the camera line, describe EVERYTHING else: environment, materials, colors 
             text = text.split("\n", 1)[1].rsplit("```", 1)[0]
 
         data = json.loads(text)
-        detailed_prompts = []
-        for scene in data["scenes"]:
-            prompt = scene["description"]
-            # Kling API has a prompt length limit — cap at 2500 chars
-            if len(prompt) > 2500:
-                prompt = prompt[:2500].rsplit(" ", 1)[0]
-                # Ensure quality tags are at the end
-                if "cinematic" not in prompt[-100:]:
-                    prompt += " cinematic photorealistic 4K HDR, shallow depth of field, film grain"
-            detailed_prompts.append(prompt)
-            logger.info(f"  Kling prompt {len(detailed_prompts)}: {len(prompt)} chars, {len(prompt.split())} words")
+        clips = data.get("clips", [])
 
-        return detailed_prompts
+        # Sanitize prompts for Kling API
+        for clip in clips:
+            prompt = clip.get("prompt", "")
+            prompt = prompt.replace("[", "").replace("]", "").replace("{", "").replace("}", "")
+            prompt = prompt.replace("\n", " ").replace("\r", " ")
+            prompt = " ".join(prompt.split())
+            if len(prompt) > 2000:
+                prompt = prompt[:2000].rsplit(" ", 1)[0]
+            clip["prompt"] = prompt
+            logger.info(f"  Clip {clip['clip_number']}: {clip['duration_sec']}s — {clip['purpose'][:60]}")
+
+        return clips

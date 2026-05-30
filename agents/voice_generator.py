@@ -41,17 +41,26 @@ class VoiceGenerator:
 
     @retry(max_attempts=3, base_delay=5.0)
     def _generate_audio(self, text: str, output_path: Path) -> int:
-        """Call ElevenLabs API to generate audio. Returns character count."""
+        """Call ElevenLabs API with default voice. Returns character count."""
+        return self._generate_audio_with_voice(
+            text, output_path,
+            self.voice_config.get("voice_id", "JBFqnCBsd6RMkjVDRZzb"),
+            self.voice_config,
+        )
+
+    @retry(max_attempts=3, base_delay=5.0)
+    def _generate_audio_with_voice(self, text: str, output_path: Path, voice_id: str, voice_settings: dict) -> int:
+        """Call ElevenLabs API with a specific character voice. Returns character count."""
         clean_text = self._clean_for_tts(text)
 
         audio_generator = self.client.text_to_speech.convert(
-            voice_id=self.voice_config["voice_id"],
+            voice_id=voice_id,
             model_id=self.voice_config["model_id"],
             text=clean_text,
             voice_settings={
-                "stability": self.voice_config["stability"],
-                "similarity_boost": self.voice_config["similarity_boost"],
-                "style": self.voice_config["style"],
+                "stability": voice_settings.get("stability", 0.5),
+                "similarity_boost": voice_settings.get("similarity_boost", 0.8),
+                "style": voice_settings.get("style", 0.3),
             },
         )
 

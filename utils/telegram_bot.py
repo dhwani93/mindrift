@@ -1,4 +1,4 @@
-"""Telegram bot utility — sends reminders and reads daily seeds."""
+"""Telegram bot — sends seed options, parses replies, handles video approval."""
 
 import logging
 import os
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class TelegramBot:
-    """Simple Telegram bot for daily thought seeds."""
+    """Telegram bot for daily seeds and video approval."""
 
     def __init__(self):
         self.token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
@@ -18,11 +18,10 @@ class TelegramBot:
         self.base_url = f"https://api.telegram.org/bot{self.token}"
 
     def send_message(self, text: str) -> bool:
-        """Send a message to the user."""
         try:
             r = requests.post(
                 f"{self.base_url}/sendMessage",
-                json={"chat_id": self.chat_id, "text": text},
+                json={"chat_id": self.chat_id, "text": text, "parse_mode": "HTML"},
                 timeout=10,
             )
             return r.status_code == 200
@@ -30,12 +29,12 @@ class TelegramBot:
             logger.error(f"Telegram send failed: {e}")
             return False
 
-    def get_latest_message(self, max_age_hours: int = 24) -> str | None:
-        """Get the latest message from the user within max_age_hours.
+    def send_seeds(self, formatted_seeds: str) -> bool:
+        """Send the formatted seed options to user."""
+        return self.send_message(formatted_seeds)
 
-        Returns:
-            The message text, or None if no recent message.
-        """
+    def get_latest_message(self, max_age_hours: int = 3) -> str | None:
+        """Get the latest message from user within max_age_hours."""
         try:
             r = requests.get(f"{self.base_url}/getUpdates", timeout=10)
             data = r.json()
@@ -43,53 +42,67 @@ class TelegramBot:
             if not data.get("result"):
                 return None
 
-            # Get the most recent message from the user
-            latest = None
             for update in reversed(data["result"]):
                 msg = update.get("message", {})
                 if str(msg.get("chat", {}).get("id")) == str(self.chat_id):
-                    # Check age
                     msg_time = msg.get("date", 0)
                     age_hours = (time.time() - msg_time) / 3600
                     if age_hours <= max_age_hours:
                         text = msg.get("text", "")
-                        # Ignore bot commands and greetings
                         if text and not text.startswith("/") and text.lower() not in ("hi", "hello", "hey"):
-                            latest = text
-                            break
-
-            return latest
-
+                            return text
+            return None
         except Exception as e:
             logger.error(f"Telegram read failed: {e}")
             return None
 
-    def send_reminder(self) -> bool:
-        """Send the daily thought reminder."""
-        text = (
-            "🌀 What's today's thought?\n\n"
-            "Drop a mind-bending idea and I'll turn it into a video.\n\n"
-            "Examples:\n"
-            "• What if Germany won WW2\n"
-            "• Hidden city under the Himalayas\n"
-            "• What if dinosaurs built a civilization\n\n"
-            "Add 'long' for a 30s video, otherwise I'll keep it ~15s.\n\n"
-            "Skip this and I'll auto-generate one."
-        )
-        return self.send_message(text)
+    def parse_seed_reply(self, reply: str) -> dict:
+        """Parse user's reply to seed options.
 
-    def send_video_for_approval(self, video_path: str, thought: str, duration: float) -> bool:
-        """Send the generated video to user for approval."""
+        Returns dict with:
+            - seed_number: int or None (1-5)
+            - modifier: str or None ("more savage", "make it 60 sec", etc.)
+            - custom_idea: str or None (if user typed their own idea)
+        """
+        reply = reply.strip()
+        result = {"seed_number": None, "modifier": None, "custom_idea": None}
+
+        # Check if starts with a number 1-5
+        if reply and reply[0].isdigit():
+            num = int(reply[0])
+            if 1 <= num <= 5:
+                result["seed_number"] = num
+                rest = reply[1:].strip().lstrip(".-,").strip()
+                if rest:
+                    result["modifier"] = rest
+                return result
+
+        # Check for modifier keywords without a number (applies to top seed)
+        modifier_keywords = ["more savage", "more wholesome", "more absurd", "more finance",
+                            "more couple", "more drama", "make it 60", "make it longer",
+                            "make it darker", "make it funnier"]
+        reply_lower = reply.lower()
+        for kw in modifier_keywords:
+            if kw in reply_lower:
+                result["seed_number"] = 1  # Apply to top seed
+                result["modifier"] = reply
+                return result
+
+        # Otherwise treat as custom idea
+        result["custom_idea"] = reply
+        return result
+
+    def send_video_for_approval(self, video_path: str, title: str, script: str, duration: float) -> bool:
+        """Send generated video to user for approval."""
         try:
-            # Send the video file
             with open(video_path, "rb") as video_file:
                 r = requests.post(
                     f"{self.base_url}/sendVideo",
                     data={
                         "chat_id": self.chat_id,
                         "caption": (
-                            f"🎬 Today's video ({duration:.0f}s)\n\n"
-                            f'"{thought}"\n\n'
+                            f"🎬 {title} ({duration:.0f}s)\n\n"
+                            f'"{script[:200]}"\n\n'
                             f"Reply YES to post, NO to skip."
                         ),
                     },
@@ -102,58 +115,43 @@ class TelegramBot:
             return False
 
     def wait_for_approval(self, timeout_minutes: int = 30) -> bool | None:
-        """Wait for user to approve or reject the video.
-
-        Returns:
-            True if approved, False if rejected, None if timeout.
-        """
-        import time as _time
-
-        # Clear old updates first
+        """Wait for YES/NO approval. Returns True, False, or None (timeout)."""
+        # Clear old updates
         requests.get(f"{self.base_url}/getUpdates", params={"offset": -1}, timeout=10)
-        _time.sleep(1)
-        # Mark current updates as read
+        time.sleep(1)
         r = requests.get(f"{self.base_url}/getUpdates", timeout=10)
         if r.json().get("result"):
             last_id = r.json()["result"][-1]["update_id"]
             requests.get(f"{self.base_url}/getUpdates", params={"offset": last_id + 1}, timeout=10)
 
-        start = _time.time()
-        while _time.time() - start < timeout_minutes * 60:
+        start = time.time()
+        while time.time() - start < timeout_minutes * 60:
             try:
-                r = requests.get(
-                    f"{self.base_url}/getUpdates",
-                    params={"timeout": 30},
-                    timeout=40,
-                )
-                data = r.json()
-
-                for update in data.get("result", []):
+                r = requests.get(f"{self.base_url}/getUpdates", params={"timeout": 30}, timeout=40)
+                for update in r.json().get("result", []):
                     msg = update.get("message", {})
                     if str(msg.get("chat", {}).get("id")) == str(self.chat_id):
                         text = msg.get("text", "").strip().lower()
-                        # Mark as read
-                        requests.get(
-                            f"{self.base_url}/getUpdates",
-                            params={"offset": update["update_id"] + 1},
-                            timeout=10,
-                        )
-                        if text in ("yes", "y", "post", "go", "👍", "approve"):
+                        requests.get(f"{self.base_url}/getUpdates", params={"offset": update["update_id"] + 1}, timeout=10)
+                        if text in ("yes", "y", "post", "go", "approve", "👍"):
                             self.send_message("✅ Posting now!")
                             return True
-                        elif text in ("no", "n", "skip", "nope", "👎", "reject"):
-                            self.send_message("⏭️ Skipped. Will try again tomorrow.")
+                        elif text in ("no", "n", "skip", "nope", "reject", "👎"):
+                            self.send_message("⏭️ Skipped.")
                             return False
-
             except Exception as e:
                 logger.debug(f"Polling error: {e}")
+            time.sleep(5)
 
-            _time.sleep(5)
-
-        self.send_message("⏰ No response — skipping today's upload.")
+        self.send_message("⏰ No response — skipping upload.")
         return None
 
     def send_completion(self, title: str, duration: float) -> bool:
-        """Notify user that video was posted."""
-        text = f"🎉 Posted! Title: {title} ({duration:.0f}s)"
-        return self.send_message(text)
+        return self.send_message(f"🎉 Posted! \"{title}\" ({duration:.0f}s)")
+
+    def send_reminder(self) -> bool:
+        """Legacy reminder — now replaced by send_seeds in the pipeline."""
+        return self.send_message(
+            "🐾 Generating today's episode seeds...\n"
+            "You'll get 5 options in a moment. Sit tight!"
+        )

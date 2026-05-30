@@ -1,50 +1,41 @@
 channel:
   name: "Mindrift"
-  tagline: "What if everything you know is just one version?"
-  upload_time_utc: "22:00"  # 6 PM EST
-  shorts_times_utc: ["13:00", "16:00", "19:00"]
+  tagline: "Tiny animals explaining human problems."
 
 content:
-  categories:
-    - horror
-    - true_crime
-    - unsolved_mystery
-    - psychological_thriller
-    - paranormal
-  weekly_schedule:
-    monday: original
-    tuesday: true_crime_curated
-    wednesday: original
-    thursday: true_crime_curated
-    friday: original
-    saturday: true_crime_curated
-    sunday: original
-  max_words: 40               # ~20 seconds at natural pace
-  max_video_duration_sec: 20  # Hard cap — 20 seconds max
+  max_words: 80                 # ~35 seconds at natural pace
+  max_video_duration_sec: 35    # Default episode length
+  max_long_duration_sec: 60     # For high-potential episodes
 
 voice:
-  voice_id: "JBFqnCBsd6RMkjVDRZzb"  # George - Warm, Captivating Storyteller
   model_id: "eleven_turbo_v2_5"
-  stability: 0.60              # Higher stability = calmer endings
-  similarity_boost: 0.80
-  style: 0.30                  # Lower style = less uniform excitement, more natural dynamics
-  speed_multiplier: 1.0            # No speed-up, natural pace
+  speed_multiplier: 1.0        # Natural pace
+  # Character-specific voices
+  characters:
+    orange_cat:
+      voice_id: "Xb7hH8MSUJpSbSDYk0k2"  # Alice - Clear, Engaging (sassy fits cat)
+      stability: 0.45
+      similarity_boost: 0.80
+      style: 0.40
+    golden_retriever:
+      voice_id: "JBFqnCBsd6RMkjVDRZzb"   # George - Warm Storyteller (earnest fits retriever)
+      stability: 0.60
+      similarity_boost: 0.80
+      style: 0.30
+    senior_dog:
+      voice_id: "pqHfZKP75CvOlQylNhV4"   # Bill - Wise, Mature, Balanced
+      stability: 0.70
+      similarity_boost: 0.80
+      style: 0.20
+    kitten:
+      voice_id: "FGY2WhTYpPnrIDTdsKH5"   # Laura - Enthusiastic, Quirky
+      stability: 0.40
+      similarity_boost: 0.75
+      style: 0.50
 
 video:
-  resolution: "1080x1920"    # Vertical 9:16 for Shorts/Reels/TikTok
+  resolution: "1080x1920"
   fps: 30
-  ken_burns_zoom_speed: 0.002
-  color_grade: "dark_teal_amber"
-  subtitle_font: "Montserrat-Bold"
-  subtitle_size: 28           # Larger for mobile
-  grain_opacity: 0.10
-  vignette_strength: "PI/4"
-  use_stock_video: true       # Prefer stock videos over static images
-
-platforms:
-  youtube_shorts: true
-  instagram_reels: false
-  tiktok: false
 
 audio:
   target_lufs: -16
@@ -57,25 +48,17 @@ audio:
 
 seo:
   default_tags:
-    - "horror story"
-    - "scary story"
-    - "true crime"
-    - "unsolved mystery"
+    - "pets"
+    - "funny pets"
+    - "cat comedy"
+    - "dog comedy"
+    - "pet POV"
+    - "animals explaining"
+    - "funny animals"
+    - "shorts"
     - "mindrift"
-    - "creepy"
-    - "horror narration"
-    - "scary stories to fall asleep to"
-    - "true scary stories"
-    - "mystery"
 
-images:
-  provider: "pexels"
-  images_per_segment: 1
-  mood_keywords:
-    - "dark"
-    - "eerie"
-    - "abandoned"
-    - "fog"
-    - "shadow"
-    - "night"
-
+platforms:
+  youtube_shorts: true
+  instagram_reels: false
+  tiktok: false
