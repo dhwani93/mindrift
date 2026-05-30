@@ -82,12 +82,19 @@ EXPRESSION KEYWORDS:
 - Confused: "head tilted, one ear flopped, squinting"
 - Smug: "half-closed eyes, slight smile, leaning back"
 
-GOOD PROMPT (38 words):
-"Static medium shot. Chubby orange tabby cat with huge green eyes sits on teal couch in bright apartment living room, potted plants and bookshelf visible behind. One eyebrow raised, arms crossed. Afternoon sunlight through window. Warm 3D storybook cartoon, cinematic 4K."
+AESTHETIC RULES (what makes viral pet content LOOK good):
+- Warm cozy lighting. Soft sunset tones. Golden hour feel. NOT sterile or clinical.
+- Lived-in environment. Books, plants, mugs, blankets, warm wood. NOT empty rooms.
+- Shallow depth of field. Background softly blurred. Character sharp.
+- Emotional expressions. Big eyes that FEEL something. Not just "staring."
+- Subtle fur movement. Gentle breathing. Ear twitch. NOT static.
 
-BAD PROMPT (too long, 100+ words):
-"A 5-second vertical 9:16 3D Pixar style animated cartoon video featuring a chubby fluffy orange tabby cat with enormous expressive bright green eyes and a round face with an oversized head sitting on a teal colored couch in a bright colorful cartoon apartment living room..."
-(This is WAY too long. Kling gets confused. Cut it to 35-40 words.)
+GOOD PROMPT (40 words):
+"Static medium shot. Cozy apartment living room, warm sunset light through window, bookshelf and plants in soft focus behind. Chubby orange tabby cat sits on worn sofa, one eyebrow raised, arms crossed, judging. Soft fur movement, gentle breathing. Warm 3D storybook cartoon, cinematic 4K."
+
+BAD PROMPT:
+"3D Pixar style. Cat on couch. Bright colors. Staring at camera."
+(Sterile. No warmth. No environment. No emotion. No life.)
 
 CAMERA OPTIONS (pick ONE per clip):
 - "Static medium shot, character visible from waist up with room visible around them." (hook shot — shows character AND environment)
@@ -135,11 +142,13 @@ CHARACTER: {char_desc}
 SCRIPT: "{script}"
 VISUAL DIRECTION: {visual_direction}
 
-Clip 1 = HOOK: Medium shot — character in their environment, expression visible, room visible around them.
-Clip 2 = REACTION: Wide shot — character interacting with relevant prop/object, full room visible.
-Clip 3 = PUNCHLINE: Medium shot — character's final reaction, walking away or dramatic gesture, environment visible.
+Clip 1 = HOOK: Medium shot — character in cozy warm room, soft sunset lighting, expressive face, room feels lived-in with books/plants/blankets.
+Clip 2 = REACTION: Character looking at or interacting with a prop, warm lighting, shallow depth of field, environment visible.
+Clip 3 = PUNCHLINE: Character's final reaction — walking away or dramatic gesture, warm cozy room around them, emotional.
 
-Each prompt MUST be under 40 words. Use the formula: Camera + Character + Expression + Action + Setting + "warm 3D storybook cartoon, soft lighting, cinematic 4K"
+Each prompt MUST be under 45 words. Use the formula: Camera + Setting (cozy, warm, lived-in) + Character + Expression + Action + "warm 3D storybook cartoon, soft sunset lighting, shallow depth of field, cinematic 4K"
+
+Make it feel WARM and COZY. Like a Ghibli film meets a TikTok pet video. NOT sterile or clinical.
 
 JSON only. Exactly 3 clips, each 5 seconds."""
 
