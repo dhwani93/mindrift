@@ -80,7 +80,14 @@ OUTPUT FORMAT — respond with valid JSON:
   ]
 }
 
-Generate exactly 5 seeds, ranked by score (highest first). Mix characters and buckets. Every hook must be a specific funny line, not a generic description."""
+Generate exactly 5 seeds in THIS exact order:
+1. RECENT EVENT — something trending right now (layoffs, AI news, economy, tech drama, pop culture)
+2. RELATIONSHIP HUMOR — couples, dating, marriage, family drama, in-laws, breakups
+3. SARCASM / SAVAGE — the most savage roast of a human behavior (adulting, work, money)
+4. EVERGREEN PET — classic pet vs human moment (food bowl, vacuum, closed doors, walks)
+5. WILD CARD — the weirdest, most absurd idea that could go viral
+
+Every hook must be a specific funny line, not a generic description."""
 
 
 @dataclass
@@ -159,8 +166,10 @@ class SeedGenerator:
 
     def format_for_telegram(self, seeds: list[EpisodeSeed]) -> str:
         """Format seeds for Telegram message."""
+        categories = ["📰 RECENT EVENT", "💕 RELATIONSHIP", "🔥 SAVAGE", "🐾 PET CLASSIC", "🤪 WILD CARD"]
+
         lines = ["🐾 Today's episode seeds\n"]
-        for s in seeds:
+        for i, s in enumerate(seeds):
             char_emoji = {
                 "orange_cat": "🐱",
                 "golden_retriever": "🐕",
@@ -168,14 +177,13 @@ class SeedGenerator:
                 "kitten": "🐈",
             }.get(s.character, "🐾")
 
+            cat_label = categories[i] if i < len(categories) else "🎲"
             lines.append(
-                f"{s.rank}. \"{s.title}\" {char_emoji}\n"
-                f"{s.premise}\n"
+                f"{s.rank}. {cat_label} {char_emoji}\n"
+                f"\"{s.title}\"\n"
                 f"Hook: \"{s.hook}\"\n"
-                f"Tone: {s.tone} | {s.recommended_length_sec}s\n"
             )
 
         lines.append("Reply with a number (1-5)")
-        lines.append("Add modifiers: 'more savage', 'more wholesome', 'make it 60 sec'")
-        lines.append("Or just type your own idea!")
+        lines.append("Or type your own idea!")
         return "\n".join(lines)
