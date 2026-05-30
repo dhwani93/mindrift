@@ -68,9 +68,11 @@ class KlingVideoGenerator:
         payload = {
             "model_name": "kling-v1",
             "prompt": clean_prompt,
+            "negative_prompt": "text, words, subtitles, captions, speech bubbles, dialogue, letters, numbers, watermark, logo, realistic, photorealistic, scary, horror, dark, ugly, distorted face, extra limbs, extra fingers, blurry, low quality, deformed, mutated, disfigured",
             "duration": str(duration),
             "aspect_ratio": "9:16",
             "mode": "pro",
+            "cfg_scale": 0.7,
         }
 
         response = requests.post(
