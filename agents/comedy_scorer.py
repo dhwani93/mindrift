@@ -10,6 +10,7 @@ import yaml
 
 from agents.seed_generator import EpisodeSeed
 from utils.cost_tracker import log_cost
+from utils.preference_learner import get_script_rules
 from utils.retry import retry
 
 logger = logging.getLogger(__name__)
@@ -150,6 +151,11 @@ TARGET LENGTH: {seed.recommended_length_sec} seconds"""
 
         if modifier:
             prompt += f"\nUSER MODIFIER: {modifier}"
+
+        # Inject learned preferences from past rejections
+        learned = get_script_rules()
+        if learned:
+            prompt += f"\n{learned}"
 
         prompt += "\n\nGenerate wholesome, savage, and absurd variants. Score each. Pick the best. Sharpen it. JSON only."
 

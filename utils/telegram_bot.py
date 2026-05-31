@@ -115,8 +115,12 @@ class TelegramBot:
             logger.error(f"Telegram video send failed: {e}")
             return False
 
-    def wait_for_approval(self, timeout_minutes: int = 0) -> bool | None:
-        """Wait for YES/NO approval. Returns True or False. Waits indefinitely by default."""
+    def wait_for_approval(self, timeout_minutes: int = 0) -> tuple[bool, str] | tuple[None, str]:
+        """Wait for YES/NO approval. Returns (approved, feedback_reason).
+
+        If user says YES → (True, "")
+        If user says NO → asks why, waits for reason → (False, "reason text")
+        """
         # Clear old updates
         requests.get(f"{self.base_url}/getUpdates", params={"offset": -1}, timeout=10)
         time.sleep(1)
@@ -136,17 +140,40 @@ class TelegramBot:
                         text = msg.get("text", "").strip().lower()
                         requests.get(f"{self.base_url}/getUpdates", params={"offset": update["update_id"] + 1}, timeout=10)
                         if text in ("yes", "y", "post", "go", "approve", "👍"):
-                            self.send_message("✅ Posting now!")
-                            return True
+                            self.send_message("✅ Got it!")
+                            return (True, "")
                         elif text in ("no", "n", "skip", "nope", "reject", "👎"):
-                            self.send_message("⏭️ Skipped.")
-                            return False
+                            self.send_message("❌ Got it. Tell me WHY so I learn and don't repeat this mistake:")
+                            # Wait for the reason
+                            reason = self._wait_for_text(timeout_minutes=30)
+                            if reason:
+                                self.send_message(f"📝 Learned: \"{reason[:100]}\". Regenerating...")
+                            return (False, reason or "no reason given")
             except Exception as e:
                 logger.debug(f"Polling error: {e}")
             time.sleep(5)
 
         # Should never reach here with infinite wait, but just in case
-        return None
+        return (None, "")
+
+    def _wait_for_text(self, timeout_minutes: int = 30) -> str:
+        """Wait for any text message from user (for rejection reasons)."""
+        import time
+        start = time.time()
+        while time.time() - start < timeout_minutes * 60:
+            try:
+                r = requests.get(f"{self.base_url}/getUpdates", params={"timeout": 30}, timeout=40)
+                for update in r.json().get("result", []):
+                    msg = update.get("message", {})
+                    if str(msg.get("chat", {}).get("id")) == str(self.chat_id):
+                        text = msg.get("text", "").strip()
+                        requests.get(f"{self.base_url}/getUpdates", params={"offset": update["update_id"] + 1}, timeout=10)
+                        if text and not text.startswith("/"):
+                            return text
+            except Exception:
+                pass
+            time.sleep(5)
+        return ""
 
     def send_completion(self, title: str, duration: float) -> bool:
         return self.send_message(f"🎉 Posted! \"{title}\" ({duration:.0f}s)")

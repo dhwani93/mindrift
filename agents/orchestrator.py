@@ -14,6 +14,7 @@ from agents.kling_video import KlingVideoGenerator
 from agents.seed_generator import SeedGenerator
 from agents.uploader import YouTubeUploader
 from agents.voice_generator import VoiceGenerator
+from utils.preference_learner import save_feedback, get_script_rules, get_prompt_rules
 from utils.telegram_bot import TelegramBot
 
 logger = logging.getLogger(__name__)
@@ -197,21 +198,20 @@ class Orchestrator:
                 if dry_run:
                     break
 
-                script_approval = telegram.wait_for_approval()
-                if script_approval is True:
+                approved, reason = telegram.wait_for_approval()
+                if approved is True:
                     logger.info("  ✅ Script approved!")
                     break
-                elif script_approval is False:
-                    logger.info(f"  ❌ Script rejected. {'Regenerating...' if attempt < 2 else 'Last attempt used.'}")
+                elif approved is False:
+                    save_feedback("script_feedback", reason)
+                    logger.info(f"  ❌ Script rejected: {reason[:60]}")
                     if attempt < 2:
-                        telegram.send_message("🔄 Regenerating script...")
-                        modifier = (modifier + " make it funnier and more relatable").strip()
+                        modifier = (modifier + " " + reason).strip()
                     else:
                         telegram.send_message("⏭️ 3 attempts used. Skipping today.")
                         summary["status"] = "skipped"
                         return summary
                 else:
-                    telegram.send_message("⏰ No response. Skipping.")
                     summary["status"] = "skipped"
                     return summary
 
@@ -241,20 +241,20 @@ class Orchestrator:
                 if dry_run:
                     break
 
-                prompts_approval = telegram.wait_for_approval()
-                if prompts_approval is True:
+                approved, reason = telegram.wait_for_approval()
+                if approved is True:
                     logger.info("  ✅ Prompts approved! Spending credits now...")
                     break
-                elif prompts_approval is False:
-                    logger.info(f"  ❌ Prompts rejected. {'Regenerating...' if attempt < 2 else 'Last attempt.'}")
+                elif approved is False:
+                    save_feedback("prompt_feedback", reason)
+                    logger.info(f"  ❌ Prompts rejected: {reason[:60]}")
                     if attempt < 2:
-                        telegram.send_message("🔄 Regenerating prompts with more detail...")
+                        telegram.send_message("🔄 Regenerating with your feedback...")
                     else:
                         telegram.send_message("⏭️ 3 attempts used. No credits spent. Skipping.")
                         summary["status"] = "skipped"
                         return summary
                 else:
-                    telegram.send_message("⏰ No response. Skipping.")
                     summary["status"] = "skipped"
                     return summary
 
@@ -365,8 +365,8 @@ class Orchestrator:
                 sent = telegram.send_video_for_approval(str(final_path), title, scored.script, audio_duration)
 
                 if sent:
-                    approval = telegram.wait_for_approval()
-                    if approval is True:
+                    approved, reason = telegram.wait_for_approval()
+                    if approved is True:
                         logger.info("  ✅ Uploading!")
                         uploader.run(
                             long_form_path=final_path, short_paths=[],
@@ -374,8 +374,9 @@ class Orchestrator:
                             tags=tags, thumbnail_path=final_path, dry_run=False,
                         )
                         telegram.send_completion(title, audio_duration)
-                    elif approval is False:
-                        logger.info("  ❌ Rejected.")
+                    elif approved is False:
+                        save_feedback("video_feedback", reason)
+                        logger.info(f"  ❌ Rejected: {reason[:60]}")
                     else:
                         logger.info("  ⏰ Timed out.")
                 else:

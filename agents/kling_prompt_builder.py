@@ -25,6 +25,7 @@ import anthropic
 import yaml
 
 from utils.cost_tracker import log_cost
+from utils.preference_learner import get_prompt_rules
 from utils.retry import retry
 
 logger = logging.getLogger(__name__)
@@ -150,7 +151,8 @@ Each prompt MUST be under 45 words. Use the formula: Camera + Setting (cozy, war
 
 Make it feel WARM and COZY. Like a Ghibli film meets a TikTok pet video. NOT sterile or clinical.
 
-JSON only. Exactly 3 clips, each 5 seconds."""
+JSON only. Exactly 3 clips, each 5 seconds.
+{get_prompt_rules()}"""
 
         response = self.client.messages.create(
             model=self.model,
