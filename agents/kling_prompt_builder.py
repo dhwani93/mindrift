@@ -151,8 +151,12 @@ Each prompt MUST be under 45 words. Use the formula: Camera + Setting (cozy, war
 
 Make it feel WARM and COZY. Like a Ghibli film meets a TikTok pet video. NOT sterile or clinical.
 
-JSON only. Exactly 3 clips, each 5 seconds.
-{get_prompt_rules()}"""
+JSON only. Exactly 3 clips, each 5 seconds."""
+
+        # Append learned preferences from past rejections
+        learned = get_prompt_rules()
+        if learned:
+            user_prompt += f"\n\n{learned}"
 
         response = self.client.messages.create(
             model=self.model,
@@ -168,7 +172,19 @@ JSON only. Exactly 3 clips, each 5 seconds.
         if text.startswith("```"):
             text = text.split("\n", 1)[1].rsplit("```", 1)[0]
 
-        data = json.loads(text)
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError:
+            # Try to repair truncated/malformed JSON
+            repaired = text
+            if repaired.count('"') % 2 != 0:
+                repaired += '"'
+            open_brackets = repaired.count("[") - repaired.count("]")
+            open_braces = repaired.count("{") - repaired.count("}")
+            repaired += "]" * open_brackets
+            repaired += "}" * open_braces
+            data = json.loads(repaired)
+
         clips = data.get("clips", [])
 
         # Sanitize and validate
