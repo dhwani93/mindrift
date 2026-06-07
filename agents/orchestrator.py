@@ -41,11 +41,21 @@ class Orchestrator:
             raise RuntimeError(f"FFmpeg failed ({description}): {result.stderr[-200:]}")
 
     def _add_title(self, input_path: Path, output_path: Path, title: str) -> None:
-        """Add persistent 2-3 word title at top of video."""
+        """Add persistent 2-3 word title at top of video with premium styling."""
         safe_title = title.upper().replace("'", "\u2019").replace(":", "\\:")
+        font_path = Path(__file__).parent.parent / "assets" / "fonts" / "BebasNeue-Regular.ttf"
+        font_arg = f":fontfile={font_path}" if font_path.exists() else ""
+
+        # Bebas Neue, large, white with thick black border + drop shadow
         cmd = [
             "ffmpeg", "-y", "-i", str(input_path),
-            "-vf", f"drawtext=text='{safe_title}':fontsize=48:fontcolor=white:borderw=3:bordercolor=black:x=(w-text_w)/2:y=h*0.06",
+            "-vf", (
+                f"drawtext=text='{safe_title}'{font_arg}"
+                f":fontsize=72:fontcolor=white"
+                f":borderw=5:bordercolor=black"
+                f":shadowcolor=black@0.6:shadowx=3:shadowy=3"
+                f":x=(w-text_w)/2:y=h*0.06"
+            ),
             "-c:v", "libx264", "-preset", "fast", "-crf", "23",
             "-c:a", "copy", "-pix_fmt", "yuv420p",
             str(output_path),
