@@ -66,7 +66,7 @@ OUTPUT FORMAT — respond with valid JSON:
   "seeds": [
     {
       "rank": 1,
-      "title": "Cat Discovers Rent (3-4 words MAX for title, always)",
+      "title": "RENT SHOCK (2-3 words MAXIMUM, ALL CAPS, tells viewer what the video is about instantly)",
       "character": "orange_cat",
       "topic": "rent",
       "bucket": "adulting",

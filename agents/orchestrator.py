@@ -40,6 +40,22 @@ class Orchestrator:
         if result.returncode != 0:
             raise RuntimeError(f"FFmpeg failed ({description}): {result.stderr[-200:]}")
 
+    def _add_title(self, input_path: Path, output_path: Path, title: str) -> None:
+        """Add persistent 2-3 word title at top of video."""
+        safe_title = title.upper().replace("'", "\u2019").replace(":", "\\:")
+        cmd = [
+            "ffmpeg", "-y", "-i", str(input_path),
+            "-vf", f"drawtext=text='{safe_title}':fontsize=48:fontcolor=white:borderw=3:bordercolor=black:x=(w-text_w)/2:y=h*0.06",
+            "-c:v", "libx264", "-preset", "fast", "-crf", "23",
+            "-c:a", "copy", "-pix_fmt", "yuv420p",
+            str(output_path),
+        ]
+        try:
+            self._run_ffmpeg(cmd, "add_title")
+        except RuntimeError:
+            import shutil
+            shutil.copy2(input_path, output_path)
+
     def _stitch_clips(self, clip_paths: list[Path], output_path: Path) -> None:
         """Concatenate clips into one video."""
         if len(clip_paths) == 1:
@@ -231,8 +247,13 @@ class Orchestrator:
                 clip_paths.append(clip_path)
 
             # Stitch all clips together
+            stitched_path = output_dir / "stitched.mp4"
+            self._stitch_clips(clip_paths, stitched_path)
+
+            # Add title overlay
             final_path = output_dir / "final.mp4"
-            self._stitch_clips(clip_paths, final_path)
+            self._add_title(stitched_path, final_path, chosen_seed.title)
+            stitched_path.unlink(missing_ok=True)
             logger.info(f"  Final video: {final_path}")
 
             # Clean up individual clips
