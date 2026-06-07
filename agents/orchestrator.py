@@ -155,39 +155,38 @@ class Orchestrator:
             logger.info(f"  Chosen: '{chosen_seed.title}' ({chosen_seed.character})")
 
             # ============================================
-            # STEP 2 + GATE 1: Script (retry up to 3x)
+            # STEP 2 + GATE 1: Generate 3 scripts, user picks one
             # ============================================
-            scored = None
-            for attempt in range(3):
-                logger.info(f"[2/5] Generating script (attempt {attempt + 1}/3)...")
-                scored = scorer.score_and_pick(chosen_seed, modifier=modifier)
+            logger.info("[2/5] Generating 3 script options...")
+            options = scorer.generate_options(chosen_seed, modifier=modifier)
 
-                script_msg = (
-                    f"📝 Script: \"{chosen_seed.title}\" (attempt {attempt + 1}/3)\n"
-                    f"Character: {chosen_seed.character.replace('_', ' ').title()}\n\n"
-                    f"---\n{scored.script}\n---\n\n"
-                    f"YES to approve, NO + reason to regenerate."
-                )
-                telegram.send_message(script_msg)
+            # Send all 3 to Telegram
+            options_msg = f"📝 3 scripts for: \"{chosen_seed.title}\"\n\n"
+            for i, opt in enumerate(options):
+                options_msg += f"{i + 1}. [{opt.tone.upper()}]\n{opt.script}\n\n"
+            options_msg += "Reply 1, 2, or 3 to pick."
+            telegram.send_message(options_msg)
 
-                if dry_run:
-                    break
+            if not dry_run:
+                # Wait for user to pick 1, 2, or 3
+                import time
+                picked = None
+                start = time.time()
+                while time.time() - start < 21600:  # 6 hours
+                    msg = telegram.get_latest_message(max_age_hours=0.5)
+                    if msg and msg.strip() in ("1", "2", "3"):
+                        picked = int(msg.strip()) - 1
+                        break
+                    time.sleep(10)
 
-                approved, reason = telegram.wait_for_approval()
-                if approved is True:
-                    logger.info("  ✅ Script approved!")
-                    break
-                elif approved is False:
-                    save_feedback("script_feedback", reason)
-                    if attempt < 2:
-                        modifier = (modifier + " " + reason).strip()
-                    else:
-                        telegram.send_message("⏭️ 3 attempts. Skipping.")
-                        summary["status"] = "skipped"
-                        return summary
-                else:
-                    summary["status"] = "skipped"
-                    return summary
+                if picked is None:
+                    picked = 0  # Default to first option
+                    logger.info("  No response — using option 1")
+
+                scored = options[picked]
+                logger.info(f"  ✅ User picked option {picked + 1}: {scored.tone}")
+            else:
+                scored = options[0]
 
             # ============================================
             # STEP 3: Build Seedance prompts (4 clips)

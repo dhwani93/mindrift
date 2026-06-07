@@ -25,7 +25,7 @@ class SeedanceVideoGenerator:
     def __init__(self):
         self.api_key = os.environ.get("FAL_KEY", "")
         os.environ["FAL_KEY"] = self.api_key
-        self.model = "fal-ai/seedance-2/text-to-video"
+        self.model = "fal-ai/seedance-2/fast/text-to-video"
 
     def generate(self, prompt: str, output_path: Path, duration: int = 5) -> SeedanceClip:
         """Generate a video clip with native TTS and lip sync.

@@ -196,3 +196,58 @@ TARGET LENGTH: {seed.recommended_length_sec} seconds"""
         logger.info(f"Best variant: {result.tone} ({result.total_score})")
         logger.info(f"Script: {result.script[:80]}...")
         return result
+
+    def generate_options(self, seed: EpisodeSeed, modifier: str = "") -> list[ScoredScript]:
+        """Generate 3 script options for user to choose from.
+
+        Returns all 3 variants (wholesome, savage, absurd) as a list.
+        """
+        prompt = f"""Generate 3 script variants for this episode:
+
+TITLE: {seed.title}
+CHARACTER: {seed.character}
+PREMISE: {seed.premise}
+HOOK: {seed.hook}
+TONE PREFERENCE: {seed.tone}
+TARGET LENGTH: {seed.recommended_length_sec} seconds"""
+
+        if modifier:
+            prompt += f"\nUSER MODIFIER: {modifier}"
+
+        learned = get_script_rules()
+        if learned:
+            prompt += f"\n{learned}"
+
+        prompt += "\n\nGenerate wholesome, savage, and absurd variants. Score each. JSON only."
+
+        response_text = self._call_claude(prompt)
+
+        text = response_text.strip()
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1].rsplit("```", 1)[0]
+
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError:
+            repaired = text
+            if repaired.count('"') % 2 != 0:
+                repaired += '"'
+            open_brackets = repaired.count("[") - repaired.count("]")
+            open_braces = repaired.count("{") - repaired.count("}")
+            repaired += "]" * open_brackets
+            repaired += "}" * open_braces
+            data = json.loads(repaired)
+
+        options = []
+        for v in data.get("variants", []):
+            options.append(ScoredScript(
+                script=v.get("script", ""),
+                tone=v.get("tone", ""),
+                total_score=v.get("total_score", 0),
+                visual_direction=data.get("visual_direction", ""),
+                caption_moments=data.get("caption_moments", []),
+            ))
+            logger.info(f"  Option {len(options)}: {v.get('tone', '')} ({v.get('total_score', 0)})")
+
+        return options
+        return result
