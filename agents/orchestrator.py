@@ -149,22 +149,65 @@ class Orchestrator:
                 seeds = seed_gen.generate_seeds(bias=file_seed)
                 chosen_seed = seeds[0]
             else:
-                # Generate 5 topics, send to Telegram, wait for pick
+                # Generate 5 topics + option 6 (custom), send to Telegram
                 seeds = seed_gen.generate_seeds()
                 categories = ["📰 TRENDING", "💕 SAUCY", "🐾 PET CLASSIC", "🤪 WILD CARD", "📰 TRENDING"]
                 topic_msg = "🐾 Pick a topic:\n\n"
                 for i, s in enumerate(seeds[:5]):
                     cat = categories[i] if i < len(categories) else "🎲"
                     topic_msg += f"{i + 1}. {cat} {s.title}\n\"{s.hook}\"\n\n"
-                topic_msg += "Reply 1-5."
+                topic_msg += "6. ✍️ YOUR IDEA — type your own topic\n\n"
+                topic_msg += "Reply 1-6 (or type your idea directly)."
                 telegram.send_message(topic_msg)
 
                 if not dry_run:
-                    pick = self._wait_for_number(telegram, ["1", "2", "3", "4", "5"])
-                    if pick:
-                        chosen_seed = seeds[int(pick) - 1]
-                        logger.info(f"  User picked topic {pick}: {chosen_seed.title}")
-                    else:
+                    # Wait for reply — could be 1-6 or a custom text
+                    import requests as _req
+                    try:
+                        r = _req.get(f"{telegram.base_url}/getUpdates", timeout=10)
+                        if r.json().get("result"):
+                            last_id = r.json()["result"][-1]["update_id"]
+                            _req.get(f"{telegram.base_url}/getUpdates", params={"offset": last_id + 1}, timeout=10)
+                    except Exception:
+                        pass
+
+                    start = time.time()
+                    chosen_seed = None
+                    while time.time() - start < 21600:
+                        try:
+                            r = _req.get(f"{telegram.base_url}/getUpdates", params={"timeout": 30}, timeout=40)
+                            for update in r.json().get("result", []):
+                                msg = update.get("message", {})
+                                if str(msg.get("chat", {}).get("id")) == str(telegram.chat_id):
+                                    text = msg.get("text", "").strip()
+                                    _req.get(f"{telegram.base_url}/getUpdates", params={"offset": update["update_id"] + 1}, timeout=10)
+                                    if text in ["1", "2", "3", "4", "5"]:
+                                        chosen_seed = seeds[int(text) - 1]
+                                        logger.info(f"  User picked topic {text}: {chosen_seed.title}")
+                                    elif text == "6" or (text and text not in ["yes", "no", "y", "n"]):
+                                        # Custom idea — generate seeds based on it
+                                        custom_text = text if text != "6" else ""
+                                        if text == "6":
+                                            telegram.send_message("✍️ Type your idea:")
+                                            # Wait for the actual idea
+                                            time.sleep(5)
+                                            custom_msg = telegram.get_latest_message(max_age_hours=0.1)
+                                            custom_text = custom_msg or ""
+                                        if custom_text:
+                                            custom_seeds = seed_gen.generate_seeds(bias=custom_text)
+                                            chosen_seed = custom_seeds[0]
+                                            logger.info(f"  Custom idea: {custom_text[:40]} → {chosen_seed.title}")
+                                        else:
+                                            chosen_seed = seeds[0]
+                                    if chosen_seed:
+                                        break
+                        except Exception:
+                            pass
+                        if chosen_seed:
+                            break
+                        time.sleep(5)
+
+                    if not chosen_seed:
                         chosen_seed = seeds[0]
                         logger.info("  No response — using topic 1")
                 else:
