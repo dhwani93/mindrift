@@ -2,13 +2,13 @@ name: Paws & Opinions — Daily Pipeline
 
 on:
   schedule:
-    # 3 videos/day at optimal posting times (EST):
-    # 9 AM EST = 1 PM UTC (morning audience)
-    - cron: '0 13 * * *'
-    # 1 PM EST = 5 PM UTC (midday audience)
-    - cron: '0 17 * * *'
-    # 6 PM EST = 10 PM UTC (evening audience)
-    - cron: '0 22 * * *'
+    # 3 videos/day at optimal posting times (PDT / California):
+    # 9 AM PDT = 4 PM UTC
+    - cron: '0 16 * * *'
+    # 1 PM PDT = 8 PM UTC
+    - cron: '0 20 * * *'
+    # 6 PM PDT = 1 AM UTC (next day)
+    - cron: '0 1 * * *'
   workflow_dispatch:
     inputs:
       thought_seed:
