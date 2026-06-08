@@ -202,47 +202,36 @@ class Orchestrator:
 
             clean_script = re.sub(r'\[.*?\]', '', scored.script).strip()
 
-            # Split into 4 sentences
+            # Build multi-shot prompt (one 15s clip with camera changes)
             raw_lines = re.split(r'[.!?\n]+', clean_script)
             lines = [l.strip() for l in raw_lines if l.strip() and len(l.strip()) > 3]
-
-            if len(lines) < 4:
-                words = clean_script.split()
-                chunk_size = max(1, len(words) // 4)
-                lines = []
-                for i in range(0, len(words), chunk_size):
-                    lines.append(" ".join(words[i:i + chunk_size]))
-
             lines = lines[:4]
-            while len(lines) < 4:
+            while len(lines) < 2:
                 lines.append(lines[-1] if lines else "...")
 
             character_desc = {
-                "orange_cat": "A fluffy real orange tabby cat with bright green eyes",
-                "golden_retriever": "A fluffy real golden retriever with big brown puppy eyes",
-                "senior_dog": "A real old gray-muzzled labrador with wise tired eyes and small reading glasses",
-                "kitten": "A real tiny gray tabby kitten with enormous round eyes",
-            }.get(chosen_seed.character, "A fluffy real orange tabby cat")
+                "orange_cat": "a fluffy real orange tabby cat with bright green eyes",
+                "golden_retriever": "a fluffy real golden retriever with big brown puppy eyes",
+                "senior_dog": "a real old gray-muzzled labrador with wise tired eyes",
+                "kitten": "a real tiny gray tabby kitten with enormous round eyes",
+            }.get(chosen_seed.character, "a fluffy real orange tabby cat")
 
-            setting = "Cozy apartment living room, warm golden afternoon light through window, bookshelf with plants and books behind, cream couch with throw blanket."
+            setting = "Cozy apartment living room, warm golden afternoon light, bookshelf with plants behind, cream couch."
 
-            clip_prompts = []
+            # Build multi-shot prompt
+            shots = []
+            cameras = ["Close-up", "Medium wide shot", "Low angle close-up", "Pull-back wide shot"]
             for i, line in enumerate(lines):
-                camera = CAMERA_ANGLES[i % len(CAMERA_ANGLES)]
-                prompt = (
-                    f"{camera} {setting} "
-                    f"{character_desc} sits on the couch, looking at camera. "
-                    f"The cat speaks clearly and naturally: '{line}' "
-                    f"Mouth moves with speech. No background music. No sound effects. Only dialogue. "
-                    f"Photorealistic, cinematic shallow depth of field, warm lighting, 4K."
-                )
-                clip_prompts.append({"number": i + 1, "line": line, "prompt": prompt})
+                cam = cameras[i % len(cameras)]
+                shots.append(f"Shot {i+1}: {cam} of {character_desc} on couch in {setting}. Cat speaks: '{line}'")
 
-            # Show prompts
-            prompts_msg = "🎬 Video plan (4 clips × 5s):\n\n"
-            for cp in clip_prompts:
-                prompts_msg += f"Clip {cp['number']}: \"{cp['line']}\"\nCamera: {CAMERA_ANGLES[(cp['number']-1) % 4]}\n\n"
-            prompts_msg += "Reply YES to generate, NO to skip."
+            multi_shot_prompt = " ".join(shots) + " No background music. No sound effects. Only character dialogue. Photorealistic, cinematic, warm lighting, 4K."
+
+            # Show prompt summary
+            prompts_msg = f"🎬 One 15s video with {len(lines)} shots:\n\n"
+            for i, line in enumerate(lines):
+                prompts_msg += f"Shot {i+1}: \"{line}\"\n"
+            prompts_msg += "\nReply YES to generate, NO to skip."
             telegram.send_message(prompts_msg)
 
             if not dry_run:
@@ -253,28 +242,20 @@ class Orchestrator:
                     telegram.send_message("⏭️ Skipped. No credits spent.")
                     summary["status"] = "skipped"
                     return summary
-                logger.info("  ✅ Prompts approved!")
+                logger.info("  ✅ Approved!")
 
             # ============================================
-            # STEP 4: Generate Seedance clips
+            # STEP 4: Generate ONE 15s Seedance clip (multi-shot)
             # ============================================
-            logger.info("[4/5] Generating 4 Seedance clips...")
+            logger.info("[4/5] Generating 15s multi-shot Seedance clip...")
 
-            clip_paths = []
-            for cp in clip_prompts:
-                clip_path = output_dir / f"clip_{cp['number']:02d}.mp4"
-                logger.info(f"  Clip {cp['number']}: \"{cp['line'][:40]}\"")
-                seedance.generate(cp["prompt"], clip_path, duration=7)
-                clip_paths.append(clip_path)
+            clip_path = output_dir / "clip.mp4"
+            seedance.generate(multi_shot_prompt, clip_path, duration=15)
 
-            # Stitch + title
-            stitched_path = output_dir / "stitched.mp4"
+            # Add title
             final_path = output_dir / "final.mp4"
-            self._stitch_clips(clip_paths, stitched_path)
-            self._add_title(stitched_path, final_path, chosen_seed.title)
-            stitched_path.unlink(missing_ok=True)
-            for p in clip_paths:
-                p.unlink(missing_ok=True)
+            self._add_title(clip_path, final_path, chosen_seed.title)
+            clip_path.unlink(missing_ok=True)
 
             logger.info(f"  Final video: {final_path}")
 
