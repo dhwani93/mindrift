@@ -53,7 +53,17 @@ jobs:
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
-        run: python3 main.py --date $(date +%Y-%m-%d)
+        run: |
+          # Determine slot based on UTC hour
+          HOUR=$(date -u +%H)
+          if [ "$HOUR" = "16" ]; then
+            SLOT="morning"
+          elif [ "$HOUR" = "20" ]; then
+            SLOT="midday"
+          else
+            SLOT="evening"
+          fi
+          python3 main.py --date $(date +%Y-%m-%d) --slot $SLOT
 
       - name: Upload output on failure
         if: failure()
