@@ -1,0 +1,20 @@
+{
+  "office_drama": {
+    "episode_count": 0,
+    "last_episode_title": null,
+    "characters": ["orange_cat", "white_cat"],
+    "setting": "corporate office"
+  },
+  "couple_drama": {
+    "episode_count": 0,
+    "last_episode_title": null,
+    "characters": ["orange_cat", "golden_retriever"],
+    "setting": "home"
+  },
+  "roommates": {
+    "episode_count": 0,
+    "last_episode_title": null,
+    "characters": ["senior_dog", "kitten"],
+    "setting": "shared apartment"
+  }
+}

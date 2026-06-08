@@ -1,5 +1,6 @@
-"""Orchestrator — 5-step pet drama pipeline with Seedance 2.0."""
+"""Orchestrator — 5-step pet drama pipeline with 3 rotating series."""
 
+import json
 import logging
 import re
 import subprocess
@@ -26,6 +27,26 @@ CAMERA_ANGLES = [
     "Low angle looking up at character.",
     "Slight orbit around character, medium close-up.",
 ]
+
+
+SERIES_TRACKER_PATH = Path(__file__).parent.parent / "data" / "series_tracker.json"
+
+
+def get_episode_number(series_key: str) -> int:
+    """Get next episode number for a series."""
+    tracker = json.loads(SERIES_TRACKER_PATH.read_text()) if SERIES_TRACKER_PATH.exists() else {}
+    series = tracker.get(series_key, {"episode_count": 0})
+    return series["episode_count"] + 1
+
+
+def increment_episode(series_key: str, title: str) -> None:
+    """Increment episode counter after successful upload."""
+    tracker = json.loads(SERIES_TRACKER_PATH.read_text()) if SERIES_TRACKER_PATH.exists() else {}
+    if series_key not in tracker:
+        tracker[series_key] = {"episode_count": 0, "last_episode_title": None}
+    tracker[series_key]["episode_count"] += 1
+    tracker[series_key]["last_episode_title"] = title
+    SERIES_TRACKER_PATH.write_text(json.dumps(tracker, indent=2))
 
 
 class Orchestrator:
@@ -338,6 +359,12 @@ class Orchestrator:
                             tags=tags, thumbnail_path=final_path, dry_run=False,
                         )
                         telegram.send_completion(title, 20)
+                        # Track series episode
+                        series_map = {"office_drama": ["orange_cat", "white_cat"], "couple_drama": ["orange_cat", "golden_retriever"], "roommates": ["senior_dog", "kitten"]}
+                        for sk, chars in series_map.items():
+                            if chosen_seed.character in chars and chosen_seed.character_2 in chars:
+                                increment_episode(sk, title)
+                                break
                     elif approved is False:
                         save_feedback("video_feedback", reason)
                         logger.info(f"  ❌ Rejected: {reason[:60]}")

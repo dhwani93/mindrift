@@ -82,12 +82,15 @@ OUTPUT FORMAT — respond with valid JSON:
   ]
 }
 
-SETTING RULES:
-- Must be specific and match the topic (NOT always "cozy apartment")
-- Relationship drama: bedroom, kitchen counter, dining table, car interior
-- Money/work topics: home office desk, kitchen with laptop, cafe table
-- Pet classics: front door, hallway, near the vacuum, bathroom door
-- Current events: couch with TV in background, desk with phone showing news
+SETTING RULES — MAKE THEM ABSURD AND UNEXPECTED (this is what stops the scroll):
+- PUT PETS IN HUMAN SITUATIONS. The visual surprise IS the hook.
+- DO NOT default to "cozy apartment" or "living room couch" — that's boring.
+- Office drama: tiny corporate office with cubicles, conference room with whiteboard, break room with microwave
+- Relationship: fancy restaurant dinner table, car interior during argument, IKEA store, therapist's office
+- Money: bank desk (cat as banker), tax office, stock trading floor, casino table
+- Current events: newsroom anchor desk, courtroom, protest rally, airport gate
+- Wild card: fast food drive-through window, gym with tiny weights, yoga class, doctor's office, spaceship cockpit, cooking show set
+- THE WEIRDER THE SETTING, THE BETTER. Cats at a sushi restaurant. Dogs in a courtroom. Kitten running a startup board meeting.
 
 CHARACTER RULES (85% of videos should be TWO characters):
 - For RELATIONSHIP seeds: ALWAYS 2 characters (e.g., orange_cat + white_cat arguing)
@@ -98,13 +101,15 @@ CHARACTER RULES (85% of videos should be TWO characters):
 - Mix up the pairings: orange_cat + white_cat, orange_cat + golden_retriever, kitten + senior_dog, etc.
 
 Generate exactly 5 seeds in THIS exact order:
-1. CURRENT EVENT — something trending THIS WEEK (tech layoffs, AI news, economy, stock market, pop culture drama)
-2. SAUCY RELATIONSHIP — couples arguing, husband/wife spending drama, dating disasters, cheating reactions, in-laws, savage couple moments. Make it SPICY.
-3. PET CLASSIC — timeless pet vs human moment (food bowl, vacuum, closed doors, suitcase, walks, gym membership)
-4. WILD CARD — the weirdest, most absurd idea. Something totally unexpected that could go mega-viral.
-5. CURRENT EVENT — different trending angle (politics, social media drama, celebrity news, cost of living)
+1. OFFICE DRAMA SERIES — Orange cat (terrible boss) + White cat (suffering employee) in a corporate office. Think: performance reviews, getting fired, passive-aggressive emails, stealing credit, meaningless meetings. Setting MUST be a corporate environment.
+2. COUPLE DRAMA SERIES — Orange cat + Golden retriever as married couple. Think: spending fights, forgot anniversary, in-laws, thermostat wars, one partner being dramatic. Setting MUST be home/restaurant/car.
+3. ROOMMATES SERIES — Senior dog + Kitten as mismatched roommates. Think: kitten too loud, eating senior's food, not cleaning, 3am energy, bringing friends over. Setting MUST be shared apartment.
+4. CURRENT EVENT — something trending THIS WEEK, using ANY two characters gossiping about it in an ABSURD setting (newsroom, courtroom, stock trading floor).
+5. WILD CARD — the weirdest, most absurd idea in the most unexpected setting. Think: cat as sushi chef, dog as yoga instructor, kitten running a startup board meeting.
 
-Every hook must be a specific funny line of dialogue the pet would say."""
+EVERY seed must have an UNEXPECTED/ABSURD setting. No "cozy apartment living room."
+Every hook must be a specific funny line of dialogue.
+Title format for series: "FIRED PT.X", "$500 SHOES PT.X", "3AM AGAIN PT.X" — include episode number."""
 
 
 @dataclass
@@ -189,7 +194,7 @@ class SeedGenerator:
 
     def format_for_telegram(self, seeds: list[EpisodeSeed]) -> str:
         """Format seeds for Telegram message."""
-        categories = ["📰 TRENDING", "💕 SAUCY", "🐾 PET CLASSIC", "🤪 WILD CARD", "📰 TRENDING"]
+        categories = ["💼 OFFICE", "💕 COUPLE", "🏠 ROOMMATES", "📰 TRENDING", "🤪 WILD CARD"]
 
         lines = ["🐾 Today's episode seeds\n"]
         for i, s in enumerate(seeds):
