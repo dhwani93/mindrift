@@ -50,6 +50,7 @@ class SeedanceVideoGenerator:
                     "prompt": prompt,
                     "duration": duration,
                     "aspect_ratio": "9:16",
+                    "generate_audio": True,  # Keep speech, Seedance generates voice with lip sync
                 },
             )
         except Exception as e:

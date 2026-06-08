@@ -39,23 +39,42 @@ SCRIPT RULES:
 - NO fancy vocabulary. NO metaphors. Just confused and outraged.
 - NO [PAUSE] markers — the clip cuts handle the pacing.
 
+HOOK RULE: Line 1 must make someone STOP SCROLLING. It must be a reaction that makes people go "wait what?"
+
+VIRAL HOOK PATTERNS THAT WORK:
+- "POV: [relatable situation]" — "POV: your human just said 'budget'"
+- Shocked reaction — "EXCUSE ME??" or "Hold on. WHAT."
+- Mid-story drop — "So apparently..."
+- Accusation — "You spent WHAT on Amazon?"
+
 GOOD SCRIPT (exactly 4 lines, one per clip):
-Line 1: "They eliminated the ENTIRE pack?"
-Line 2: "Because we were too GOOD?"
-Line 3: "In THIS economy?"
-Line 4: "I'm knocking something off the table."
-(4 sentences. 5-8 words each. One per clip.)
+Line 1: "He spent FIVE THOUSAND dollars?"
+Line 2: "On a GIRLFRIEND?"
+Line 3: "And she LEFT?"
+Line 4: "I would never leave for less than ten."
+(Relatable. Savage. Every line is a reaction, not an explanation.)
 
 ANOTHER GOOD EXAMPLE:
-Line 1: "Wait. They take HOW much?"
-Line 2: "Every single year?"
-Line 3: "And you just let them?"
-Line 4: "I would have scratched someone."
-(4 sentences. Simple. Each one fits in 5 seconds.)
+Line 1: "Hold on. You got FIRED?"
+Line 2: "After TEN years?"
+Line 3: "Over a ZOOM call?"
+Line 4: "That's it. I'm biting someone."
+(Short. Punchy. Escalates. Punchline at the end.)
 
-BAD SCRIPT — too many words per line:
-"So they eliminated you from the pack because you're excellent at serving them and they decided they don't need you"
-(This is 20+ words in ONE line. It would be crammed into 5 seconds. IMPOSSIBLE to speak clearly.)
+ANOTHER:
+Line 1: "She bought ANOTHER purse?"
+Line 2: "But my food bowl is still empty?"
+Line 3: "The disrespect."
+Line 4: "I'm sitting on her laptop tonight."
+(Relatable couple drama through pet lens. Funny because it's true.)
+
+BAD SCRIPT — too technical, not relatable:
+"The economic restructuring of the company has resulted in workforce reduction"
+(NOBODY talks like this. This is AI slop. Write like a person REACTING, not a news anchor.)
+
+BAD SCRIPT — too long per line:
+"So they eliminated you from the pack because you're excellent at serving them"
+(15+ words in one line = 5 seconds of rushed speaking. MAX 8 words per line.)
 
 BAD SCRIPT — too fancy, too long:
 "The economic implications of domicile monetization have become apparent to me. As the primary occupant of this residence, I find the concept of recurring payments fundamentally flawed..."

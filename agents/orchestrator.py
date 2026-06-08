@@ -232,8 +232,8 @@ class Orchestrator:
                 prompt = (
                     f"{camera} {setting} "
                     f"{character_desc} sits on the couch, looking at camera. "
-                    f"The cat speaks with expressive face: '{line}' "
-                    f"Mouth moves naturally with speech. "
+                    f"The cat speaks clearly and naturally: '{line}' "
+                    f"Mouth moves with speech. No background music. No sound effects. Only dialogue. "
                     f"Photorealistic, cinematic shallow depth of field, warm lighting, 4K."
                 )
                 clip_prompts.append({"number": i + 1, "line": line, "prompt": prompt})
@@ -264,7 +264,7 @@ class Orchestrator:
             for cp in clip_prompts:
                 clip_path = output_dir / f"clip_{cp['number']:02d}.mp4"
                 logger.info(f"  Clip {cp['number']}: \"{cp['line'][:40]}\"")
-                seedance.generate(cp["prompt"], clip_path, duration=5)
+                seedance.generate(cp["prompt"], clip_path, duration=7)
                 clip_paths.append(clip_path)
 
             # Stitch + title
