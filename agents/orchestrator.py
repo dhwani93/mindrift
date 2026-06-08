@@ -149,16 +149,18 @@ class Orchestrator:
                 seeds = seed_gen.generate_seeds(bias=file_seed)
                 chosen_seed = seeds[0]
             else:
-                # Generate 3 topics, send to Telegram, wait for pick
+                # Generate 5 topics, send to Telegram, wait for pick
                 seeds = seed_gen.generate_seeds()
+                categories = ["📰 TRENDING", "💕 SAUCY", "🐾 PET CLASSIC", "🤪 WILD CARD", "📰 TRENDING"]
                 topic_msg = "🐾 Pick a topic:\n\n"
-                for i, s in enumerate(seeds[:3]):
-                    topic_msg += f"{i + 1}. {s.title} — \"{s.hook}\"\n\n"
-                topic_msg += "Reply 1, 2, or 3."
+                for i, s in enumerate(seeds[:5]):
+                    cat = categories[i] if i < len(categories) else "🎲"
+                    topic_msg += f"{i + 1}. {cat} {s.title}\n\"{s.hook}\"\n\n"
+                topic_msg += "Reply 1-5."
                 telegram.send_message(topic_msg)
 
                 if not dry_run:
-                    pick = self._wait_for_number(telegram, ["1", "2", "3"])
+                    pick = self._wait_for_number(telegram, ["1", "2", "3", "4", "5"])
                     if pick:
                         chosen_seed = seeds[int(pick) - 1]
                         logger.info(f"  User picked topic {pick}: {chosen_seed.title}")

@@ -82,12 +82,11 @@ OUTPUT FORMAT — respond with valid JSON:
 
 Generate exactly 5 seeds in THIS exact order:
 1. CURRENT EVENT — something trending THIS WEEK (tech layoffs, AI news, economy, stock market, pop culture drama)
-2. CURRENT EVENT — different trending topic (politics, social media drama, celebrity news, cost of living)
-3. CURRENT EVENT — another angle on what people are talking about RIGHT NOW
-4. RELATIONSHIP — couples arguing, dating disasters, marriage, family drama, in-laws, spending habits
-5. PET CLASSIC — timeless pet vs human moment (food bowl, vacuum, closed doors, suitcase, walks)
+2. SAUCY RELATIONSHIP — couples arguing, husband/wife spending drama, dating disasters, cheating reactions, in-laws, savage couple moments. Make it SPICY.
+3. PET CLASSIC — timeless pet vs human moment (food bowl, vacuum, closed doors, suitcase, walks, gym membership)
+4. WILD CARD — the weirdest, most absurd idea. Something totally unexpected that could go mega-viral.
+5. CURRENT EVENT — different trending angle (politics, social media drama, celebrity news, cost of living)
 
-The first 3 MUST be about things people are actually discussing this week. Not generic topics. Specific current events.
 Every hook must be a specific funny line of dialogue the pet would say."""
 
 
@@ -167,7 +166,7 @@ class SeedGenerator:
 
     def format_for_telegram(self, seeds: list[EpisodeSeed]) -> str:
         """Format seeds for Telegram message."""
-        categories = ["📰 TRENDING", "📰 TRENDING", "📰 TRENDING", "💕 RELATIONSHIP", "🐾 PET CLASSIC"]
+        categories = ["📰 TRENDING", "💕 SAUCY", "🐾 PET CLASSIC", "🤪 WILD CARD", "📰 TRENDING"]
 
         lines = ["🐾 Today's episode seeds\n"]
         for i, s in enumerate(seeds):
