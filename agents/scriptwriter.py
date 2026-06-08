@@ -1,0 +1,344 @@
+"""Scriptwriter Agent — dedicated pet drama dialogue writer.
+
+This agent ONLY writes scripts. It doesn't score, pick, or generate video prompts.
+It writes dialogue between two characters that sounds like a real conversation,
+not AI-generated monologue.
+
+Key principles (from research):
+- 80-100 words for 30 seconds (170 WPM speaking pace)
+- One idea per sentence
+- No dead air — dialogue fills every second
+- Two characters with labeled lines
+- Each character has a distinct voice
+- Contractions, not formal grammar ("we're" not "we are")
+- End with a punchline/twist
+"""
+
+import json
+import logging
+from dataclasses import dataclass
+from pathlib import Path
+
+import anthropic
+import yaml
+
+from utils.cost_tracker import log_cost
+from utils.preference_learner import get_script_rules
+from utils.retry import retry
+
+logger = logging.getLogger(__name__)
+
+CONFIG_PATH = Path(__file__).parent.parent / "config" / "settings.yaml"
+SERIES_TRACKER_PATH = Path(__file__).parent.parent / "data" / "series_tracker.json"
+
+# Character voice bible — how each character ACTUALLY talks
+CHARACTER_VOICES = {
+    "orange_cat": {
+        "name": "Boss Cat",
+        "personality": "Power-tripping, condescending, takes credit for everything, dramatic, treats everything like a corporate crisis",
+        "speech_style": "Short declarative statements. Uses 'I' a lot. Refers to self in third person sometimes. Pauses for dramatic effect by trailing off.",
+        "catchphrases": [
+            "I don't recall asking for your opinion.",
+            "That's above your pay grade.",
+            "I built this from scratch... well, someone did.",
+            "This is MY house. You just live here.",
+            "Do you know who I am?",
+            "Noted. Now get out.",
+        ],
+        "never_says": "Please, sorry, thank you, I was wrong",
+    },
+    "white_cat": {
+        "name": "Employee Cat",
+        "personality": "Overworked, sarcastic under breath, passive-aggressive, keeps receipts, one day away from quitting",
+        "speech_style": "Deadpan delivery. Sarcastic. Uses 'I' when standing up for self, 'you' when accusing. Mutters to self.",
+        "catchphrases": [
+            "I literally did all the work.",
+            "My resignation letter has been ready since day one.",
+            "Sure. Great idea. That I had. Last week.",
+            "I'm not mad. I'm documenting.",
+            "Oh you want ME to fix it? Shocking.",
+        ],
+        "never_says": "You're right, boss. Great leadership.",
+    },
+    "golden_retriever": {
+        "name": "Husband/Wife Dog",
+        "personality": "Lovable, clueless, accidentally makes things worse while trying to help, brings comfort objects to solve problems",
+        "speech_style": "Earnest. Uses 'we' and 'I thought' a lot. Defends self with optimism. Gets confused by anger.",
+        "catchphrases": [
+            "But it was on SALE.",
+            "I thought you'd be happy!",
+            "I brought your slippers. Does that help?",
+            "Wait, are you mad? You LOOK mad.",
+            "I love you. Is that the wrong answer?",
+            "I panicked and bought flowers.",
+        ],
+        "never_says": "You're overreacting. Calm down.",
+    },
+    "senior_dog": {
+        "name": "Senior Roommate",
+        "personality": "Tired, wise, has a routine, everything was better before, HR manager energy, done with everyone's nonsense",
+        "speech_style": "Dry, understated. Short sentences. Uses 'I' with exhaustion. Sighs before speaking.",
+        "catchphrases": [
+            "In MY day, we respected boundaries.",
+            "I didn't sign up for this.",
+            "I need a nap after this conversation.",
+            "I've reviewed the situation. It's bad.",
+            "I'm too old for this.",
+            "That's not how we do things in this house.",
+        ],
+        "never_says": "That sounds fun! Let's do it!",
+    },
+    "kitten": {
+        "name": "Chaos Roommate",
+        "personality": "Zero boundaries, infinite energy, doesn't understand rules, thinks everything belongs to them, accidentally destructive",
+        "speech_style": "Fast, breathless, no filter. Uses 'I' with total confidence. Doesn't understand why anything is a problem.",
+        "catchphrases": [
+            "What's yours is mine. That's the rule.",
+            "I didn't know that was important.",
+            "Why are you yelling? It's only 3am.",
+            "I made it better. You're welcome.",
+            "Was that yours? It's on the floor now.",
+            "I have SO much energy right now.",
+        ],
+        "never_says": "I'm sorry. I'll be quiet. I'll clean up.",
+    },
+}
+
+SYSTEM_PROMPT = """You are a COMEDY SCRIPTWRITER for short-form pet drama videos (15-30 seconds).
+
+You write DIALOGUE between two animal characters. NOT monologue. NOT narration. A real back-and-forth CONVERSATION.
+
+ABSOLUTE RULES:
+1. Label EVERY line with the speaker: "ORANGE CAT:" or "GOLDEN RETRIEVER:" etc.
+2. Characters use "I" when talking about themselves, "you" when talking to the other.
+3. No dead air. Dialogue must fill every second. Characters talk FAST.
+4. Each line is ONE short sentence (5-10 words max).
+5. Characters react to what the OTHER just said — it's a real conversation.
+6. End with a PUNCHLINE — the funniest line is ALWAYS last.
+7. 6-8 lines total for a 15-second video. 10-14 lines for 30 seconds.
+8. Use contractions (don't, can't, won't — NOT do not, cannot, will not).
+9. Characters INTERRUPT each other — use "Wait—" or "Hold on—" or "Excuse me?"
+
+DIALOGUE STRUCTURE (15 seconds):
+Line 1: Character A — THE HOOK (accusation, discovery, shock)
+Line 2: Character B — REACTION (defense, confusion, deflection)
+Line 3: Character A — ESCALATION (doubles down)
+Line 4: Character B — COUNTER (fights back or digs deeper)
+Line 5: Character A — PEAK (most outraged moment)
+Line 6: Character B — PUNCHLINE (the twist that makes it funny)
+
+DIALOGUE STRUCTURE (30 seconds):
+Lines 1-3: SETUP (discovery + first reactions)
+Lines 4-7: ESCALATION (argument builds, new info revealed)
+Lines 8-10: PEAK (maximum tension)
+Lines 11-14: RESOLUTION + PUNCHLINE (twist ending)
+
+GOOD DIALOGUE EXAMPLE (15s, office drama):
+```
+ORANGE CAT: You took credit for MY presentation?
+WHITE CAT: I improved it.
+ORANGE CAT: You changed ONE slide.
+WHITE CAT: The important one.
+ORANGE CAT: It was the TITLE slide.
+WHITE CAT: And now it has MY name on it.
+```
+(6 lines. Back and forth. Each reacts to the other. Punchline at end.)
+
+GOOD DIALOGUE EXAMPLE (15s, couple drama):
+```
+ORANGE CAT: You spent four hundred dollars.
+GOLDEN RETRIEVER: It was an investment.
+ORANGE CAT: In SHOES?
+GOLDEN RETRIEVER: They were on sale!
+ORANGE CAT: That's not how sales work!
+GOLDEN RETRIEVER: I also bought you flowers. With your card.
+```
+
+GOOD DIALOGUE EXAMPLE (15s, roommates):
+```
+SENIOR DOG: What happened to my food?
+KITTEN: I shared it. With myself.
+SENIOR DOG: That was a full bowl.
+KITTEN: I was hungry!
+SENIOR DOG: It's been TEN minutes since breakfast.
+KITTEN: Exactly. I could have died.
+```
+
+BAD DIALOGUE:
+```
+CAT: You know what really bothers me about the economic situation?
+DOG: What's that?
+CAT: The fundamental problem with capitalism is...
+```
+(Too formal. Too long per line. Not funny. Not relatable. AI SLOP.)
+
+BAD DIALOGUE:
+```
+CAT: You did something bad.
+CAT: And it was really bad.
+CAT: I can't believe you did that.
+CAT: This is so bad.
+```
+(Only ONE character talking! Where's the conversation?!)
+
+OUTPUT FORMAT — valid JSON:
+{
+  "title": "EPISODE TITLE PT.X (2-3 words ALL CAPS + part number)",
+  "duration_sec": 15 or 30,
+  "lines": [
+    {"speaker": "orange_cat", "line": "The actual dialogue"},
+    {"speaker": "white_cat", "line": "The response"}
+  ],
+  "visual_notes": "Brief description of setting and what characters are doing physically"
+}
+"""
+
+
+@dataclass
+class Script:
+    title: str
+    duration_sec: int
+    lines: list[dict]  # [{"speaker": "orange_cat", "line": "..."}]
+    visual_notes: str
+
+    @property
+    def full_dialogue(self) -> str:
+        return "\n".join(f"{l['speaker'].upper()}: \"{l['line']}\"" for l in self.lines)
+
+    @property
+    def word_count(self) -> int:
+        return sum(len(l["line"].split()) for l in self.lines)
+
+
+class Scriptwriter:
+    """Dedicated pet drama dialogue writer."""
+
+    def __init__(self):
+        with open(CONFIG_PATH) as f:
+            self.config = yaml.safe_load(f)
+        self.client = anthropic.Anthropic()
+        self.model = "claude-haiku-4-5-20251001"
+
+    def _get_series_context(self, series_key: str) -> str:
+        """Get previous episode context for series continuity."""
+        if not SERIES_TRACKER_PATH.exists():
+            return ""
+        tracker = json.loads(SERIES_TRACKER_PATH.read_text())
+        series = tracker.get(series_key, {})
+        ep_count = series.get("episode_count", 0)
+        last_title = series.get("last_episode_title", "")
+        if ep_count > 0:
+            return f"\nThis is episode {ep_count + 1}. Previous episode was: '{last_title}'. Continue the story — reference what happened before if natural, but this episode must also work standalone."
+        return "\nThis is episode 1. Establish the characters and their dynamic."
+
+    def _get_character_context(self, char1: str, char2: str) -> str:
+        """Get character voice descriptions."""
+        c1 = CHARACTER_VOICES.get(char1, CHARACTER_VOICES["orange_cat"])
+        c2 = CHARACTER_VOICES.get(char2, CHARACTER_VOICES["white_cat"])
+        return f"""
+CHARACTER 1 — {c1['name']} ({char1}):
+Personality: {c1['personality']}
+Speech style: {c1['speech_style']}
+Example lines: {', '.join(c1['catchphrases'][:3])}
+NEVER says: {c1['never_says']}
+
+CHARACTER 2 — {c2['name']} ({char2}):
+Personality: {c2['personality']}
+Speech style: {c2['speech_style']}
+Example lines: {', '.join(c2['catchphrases'][:3])}
+NEVER says: {c2['never_says']}
+"""
+
+    @retry(max_attempts=3, base_delay=2.0)
+    def _call_claude(self, user_prompt: str) -> str:
+        response = self.client.messages.create(
+            model=self.model,
+            max_tokens=2048,
+            system=SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": user_prompt}],
+        )
+        cost = (response.usage.input_tokens * 1.0 + response.usage.output_tokens * 5.0) / 1_000_000
+        log_cost("claude_scriptwriter", response.usage.input_tokens + response.usage.output_tokens, cost)
+        return response.content[0].text
+
+    def write(self, topic: str, character_1: str, character_2: str, setting: str,
+              series_key: str = "", duration: int = 15, tone: str = "savage") -> Script:
+        """Write a dialogue script for two characters.
+
+        Args:
+            topic: What the episode is about (e.g., "stealing credit at work")
+            character_1: First character key (e.g., "orange_cat")
+            character_2: Second character key (e.g., "white_cat")
+            setting: Where the scene takes place
+            series_key: Series identifier for continuity (e.g., "office_drama")
+            duration: 15 or 30 seconds
+            tone: "savage", "wholesome", or "absurd"
+        """
+        char_context = self._get_character_context(character_1, character_2)
+        series_context = self._get_series_context(series_key) if series_key else ""
+        learned = get_script_rules()
+
+        prompt = f"""Write a {duration}-second pet drama dialogue.
+
+TOPIC: {topic}
+SETTING: {setting}
+TONE: {tone}
+{char_context}
+{series_context}
+{learned if learned else ''}
+
+Write a fast-paced, funny dialogue. {6 if duration <= 15 else 12} lines total.
+Every line is 5-10 words. Characters react to each other.
+End with a punchline. JSON only."""
+
+        response_text = self._call_claude(prompt)
+
+        text = response_text.strip()
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1].rsplit("```", 1)[0]
+
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError:
+            repaired = text
+            if repaired.count('"') % 2 != 0:
+                repaired += '"'
+            open_brackets = repaired.count("[") - repaired.count("]")
+            open_braces = repaired.count("{") - repaired.count("}")
+            repaired += "]" * open_brackets
+            repaired += "}" * open_braces
+            data = json.loads(repaired)
+
+        script = Script(
+            title=data.get("title", topic.upper()),
+            duration_sec=data.get("duration_sec", duration),
+            lines=data.get("lines", []),
+            visual_notes=data.get("visual_notes", setting),
+        )
+
+        logger.info(f"Script: '{script.title}' — {len(script.lines)} lines, {script.word_count} words")
+        for line in script.lines:
+            logger.info(f"  {line['speaker']}: \"{line['line']}\"")
+
+        return script
+
+    def write_three_options(self, topic: str, character_1: str, character_2: str,
+                            setting: str, series_key: str = "", duration: int = 15) -> list[Script]:
+        """Generate 3 script options (savage, wholesome, absurd) for user to pick."""
+        options = []
+        for tone in ["savage", "wholesome", "absurd"]:
+            script = self.write(topic, character_1, character_2, setting, series_key, duration, tone)
+            options.append(script)
+        return options
+
+    def format_for_telegram(self, options: list[Script]) -> str:
+        """Format 3 script options for Telegram."""
+        msg = "📝 Pick a script (reply 1, 2, or 3):\n\n"
+        for i, script in enumerate(options):
+            msg += f"{i + 1}. [{script.lines[0].get('speaker', '').upper() if script.lines else 'UNKNOWN'}]\n"
+            for line in script.lines[:4]:  # Show first 4 lines as preview
+                msg += f"  {line['speaker'].replace('_', ' ').title()}: \"{line['line']}\"\n"
+            if len(script.lines) > 4:
+                msg += f"  ... ({len(script.lines) - 4} more lines)\n"
+            msg += "\n"
+        return msg
