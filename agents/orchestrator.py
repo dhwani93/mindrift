@@ -81,13 +81,35 @@ class Orchestrator:
         concat_file.unlink()
 
     def _wait_for_number(self, telegram: TelegramBot, valid: list[str], timeout_hours: int = 6) -> str | None:
-        """Wait for user to reply with a specific number. Returns the number or None."""
+        """Wait for user to reply with a specific number. Returns the number or None.
+
+        Clears old messages first so we only read NEW replies.
+        """
+        import requests
+        # Flush all existing updates so we only get fresh replies
+        try:
+            r = requests.get(f"{telegram.base_url}/getUpdates", timeout=10)
+            if r.json().get("result"):
+                last_id = r.json()["result"][-1]["update_id"]
+                requests.get(f"{telegram.base_url}/getUpdates", params={"offset": last_id + 1}, timeout=10)
+        except Exception:
+            pass
+
         start = time.time()
         while time.time() - start < timeout_hours * 3600:
-            msg = telegram.get_latest_message(max_age_hours=0.5)
-            if msg and msg.strip() in valid:
-                return msg.strip()
-            time.sleep(10)
+            try:
+                r = requests.get(f"{telegram.base_url}/getUpdates", params={"timeout": 30}, timeout=40)
+                for update in r.json().get("result", []):
+                    msg = update.get("message", {})
+                    if str(msg.get("chat", {}).get("id")) == str(telegram.chat_id):
+                        text = msg.get("text", "").strip()
+                        # Mark as read
+                        requests.get(f"{telegram.base_url}/getUpdates", params={"offset": update["update_id"] + 1}, timeout=10)
+                        if text in valid:
+                            return text
+            except Exception:
+                pass
+            time.sleep(5)
         return None
 
     def run_daily(self, run_date: str | None = None, dry_run: bool = False) -> dict:
