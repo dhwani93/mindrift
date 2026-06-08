@@ -193,15 +193,26 @@ class Orchestrator:
             # ============================================
             logger.info("[3/5] Building clip prompts...")
 
-            # Split script into 4 lines for 4 clips
+            # Split script into 4 short lines — ONE line per 5-second clip
             import re
             clean_script = re.sub(r'\[.*?\]', '', scored.script).strip()
-            lines = [l.strip() for l in clean_script.split('\n') if l.strip()]
 
-            # Pad or trim to 4 lines
+            # Split by sentence endings, newlines, or periods
+            raw_lines = re.split(r'[.!?\n]+', clean_script)
+            lines = [l.strip() for l in raw_lines if l.strip() and len(l.strip()) > 3]
+
+            # If still not 4 lines, split by word count
+            if len(lines) < 4:
+                words = clean_script.split()
+                chunk_size = max(1, len(words) // 4)
+                lines = []
+                for i in range(0, len(words), chunk_size):
+                    lines.append(" ".join(words[i:i + chunk_size]))
+
+            # Trim to exactly 4
+            lines = lines[:4]
             while len(lines) < 4:
                 lines.append(lines[-1] if lines else "...")
-            lines = lines[:4]
 
             # Build prompts — each clip gets a camera angle + dialogue
             character_desc = {

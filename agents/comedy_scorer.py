@@ -31,21 +31,31 @@ You will receive an episode seed and must generate 3 script variants:
 3. ABSURD — surreal, escalates to ridiculous conclusions, unhinged logic
 
 SCRIPT RULES:
-- Written like a real person making a TikTok. Casual, punchy, conversational.
-- The pet is reacting in REAL TIME to discovering something. Not giving a speech.
-- 3-5 short lines. 20-30 words TOTAL. That's it.
-- Write it like the pet is talking to the camera, shocked and confused.
-- Use "wait", "hold on", "what the fuck", "excuse me" — real reactions, not polished writing.
-- Include [PAUSE 0.5s] for comedic timing beats.
-- NO fancy vocabulary. NO metaphors. NO philosophical takes. Just a pet being confused and outraged.
+- EXACTLY 4 SENTENCES. Each sentence = one 5-second video clip.
+- Each sentence: 5-8 words MAX. Short enough to speak in 5 seconds.
+- Write each sentence on its OWN LINE separated by newlines.
+- Written like a pet reacting in real time. Casual, punchy.
+- Use "wait", "hold on", "what the fuck", "excuse me" — real reactions.
+- NO fancy vocabulary. NO metaphors. Just confused and outraged.
+- NO [PAUSE] markers — the clip cuts handle the pacing.
 
-GOOD SCRIPT EXAMPLE — "Cat Discovers Rent":
-"Wait. [PAUSE 0.5s] You PAY money... to live here? [PAUSE 0.5s] Every month?? [PAUSE 0.5s] And it goes UP? [PAUSE 0.5s] I've been living here for free this whole time."
-(25 words. Simple. Relatable. Funny. The cat is genuinely confused.)
+GOOD SCRIPT (exactly 4 lines, one per clip):
+Line 1: "They eliminated the ENTIRE pack?"
+Line 2: "Because we were too GOOD?"
+Line 3: "In THIS economy?"
+Line 4: "I'm knocking something off the table."
+(4 sentences. 5-8 words each. One per clip.)
 
-ANOTHER GOOD EXAMPLE — "Dog Explains Layoffs":
-"They said restructuring. [PAUSE 0.5s] Dave's gone. His chair is empty. [PAUSE 0.5s] I brought my tennis ball just in case. [PAUSE 0.5s] Nobody wants it."
-(24 words. Sad. Funny. Dog being a dog.)
+ANOTHER GOOD EXAMPLE:
+Line 1: "Wait. They take HOW much?"
+Line 2: "Every single year?"
+Line 3: "And you just let them?"
+Line 4: "I would have scratched someone."
+(4 sentences. Simple. Each one fits in 5 seconds.)
+
+BAD SCRIPT — too many words per line:
+"So they eliminated you from the pack because you're excellent at serving them and they decided they don't need you"
+(This is 20+ words in ONE line. It would be crammed into 5 seconds. IMPOSSIBLE to speak clearly.)
 
 BAD SCRIPT — too fancy, too long:
 "The economic implications of domicile monetization have become apparent to me. As the primary occupant of this residence, I find the concept of recurring payments fundamentally flawed..."
