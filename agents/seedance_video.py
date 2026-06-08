@@ -43,14 +43,33 @@ class SeedanceVideoGenerator:
         """
         logger.info(f"Generating Seedance clip ({duration}s): {prompt[:80]}...")
 
-        result = fal_client.subscribe(
-            self.model,
-            arguments={
-                "prompt": prompt,
-                "duration": duration,
-                "aspect_ratio": "9:16",
-            },
-        )
+        try:
+            result = fal_client.subscribe(
+                self.model,
+                arguments={
+                    "prompt": prompt,
+                    "duration": duration,
+                    "aspect_ratio": "9:16",
+                },
+            )
+        except Exception as e:
+            if "content_policy" in str(e).lower() or "sensitive" in str(e).lower():
+                # Retry without dialogue — just visual, no speech
+                logger.warning(f"  Content policy hit. Retrying without speech...")
+                # Remove the dialogue from prompt
+                import re
+                clean_prompt = re.sub(r"The cat speaks.*?'[^']*'", "The cat looks at camera with expressive face.", prompt)
+                clean_prompt = re.sub(r"Mouth moves naturally with speech\.", "", clean_prompt)
+                result = fal_client.subscribe(
+                    self.model,
+                    arguments={
+                        "prompt": clean_prompt,
+                        "duration": duration,
+                        "aspect_ratio": "9:16",
+                    },
+                )
+            else:
+                raise
 
         video_url = result["video"]["url"]
         output_path.parent.mkdir(parents=True, exist_ok=True)

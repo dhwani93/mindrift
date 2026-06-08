@@ -1,7 +1,9 @@
-"""Orchestrator — pet drama pipeline using Seedance 2.0 (video + voice in one call)."""
+"""Orchestrator — 5-step pet drama pipeline with Seedance 2.0."""
 
 import logging
+import re
 import subprocess
+import time
 from datetime import date
 from pathlib import Path
 
@@ -18,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 CONFIG_PATH = Path(__file__).parent.parent / "config" / "settings.yaml"
 
-# Camera angles to cycle through for variety
 CAMERA_ANGLES = [
     "Slow push-in, medium shot.",
     "Static wide shot showing full room.",
@@ -28,7 +29,7 @@ CAMERA_ANGLES = [
 
 
 class Orchestrator:
-    """Pipeline: seeds → script → Seedance clips (video+voice) → stitch → approve → upload."""
+    """5-step pipeline: topics → scripts → prompts → generate → approve → upload."""
 
     def __init__(self, output_base: Path | None = None):
         with open(CONFIG_PATH) as f:
@@ -41,12 +42,11 @@ class Orchestrator:
             raise RuntimeError(f"FFmpeg failed ({description}): {result.stderr[-200:]}")
 
     def _add_title(self, input_path: Path, output_path: Path, title: str) -> None:
-        """Add persistent 2-3 word title at top of video with premium styling."""
+        """Add persistent 2-3 word title at top of video with Bebas Neue font."""
         safe_title = title.upper().replace("'", "\u2019").replace(":", "\\:")
         font_path = Path(__file__).parent.parent / "assets" / "fonts" / "BebasNeue-Regular.ttf"
         font_arg = f":fontfile={font_path}" if font_path.exists() else ""
 
-        # Bebas Neue, large, white with thick black border + drop shadow
         cmd = [
             "ffmpeg", "-y", "-i", str(input_path),
             "-vf", (
@@ -72,7 +72,6 @@ class Orchestrator:
             import shutil
             shutil.copy2(clip_paths[0], output_path)
             return
-
         concat_file = output_path.parent / "concat.txt"
         concat_file.write_text("".join(f"file '{p}'\n" for p in clip_paths))
         self._run_ffmpeg([
@@ -80,6 +79,16 @@ class Orchestrator:
             "-i", str(concat_file), "-c", "copy", str(output_path)
         ], "stitch_clips")
         concat_file.unlink()
+
+    def _wait_for_number(self, telegram: TelegramBot, valid: list[str], timeout_hours: int = 6) -> str | None:
+        """Wait for user to reply with a specific number. Returns the number or None."""
+        start = time.time()
+        while time.time() - start < timeout_hours * 3600:
+            msg = telegram.get_latest_message(max_age_hours=0.5)
+            if msg and msg.strip() in valid:
+                return msg.strip()
+            time.sleep(10)
+        return None
 
     def run_daily(self, run_date: str | None = None, dry_run: bool = False) -> dict:
         run_date = run_date or date.today().isoformat()
@@ -100,108 +109,79 @@ class Orchestrator:
             telegram = TelegramBot()
 
             # ============================================
-            # STEP 1: Get seed
+            # STEP 1: Topic selection (3 options)
             # ============================================
-            logger.info("[1/5] Getting seed...")
-            user_reply = None
-            seed_file = Path(__file__).parent.parent / "data" / "daily_seed.txt"
+            logger.info("[1/5] Generating topic options...")
 
+            # Check for pre-set seed (from workflow_dispatch)
+            seed_file = Path(__file__).parent.parent / "data" / "daily_seed.txt"
+            file_seed = ""
             if seed_file.exists():
                 file_seed = seed_file.read_text().strip()
                 if file_seed:
                     seed_file.write_text("")
-                    user_reply = file_seed
-                    logger.info(f"  Seed from file: {user_reply[:60]}")
 
-            if not user_reply:
-                user_reply = telegram.get_latest_message(max_age_hours=3)
-                if user_reply:
-                    logger.info(f"  Seed from Telegram: {user_reply[:60]}")
-
-            if not user_reply:
-                seeds = seed_gen.generate_seeds()
-                formatted = seed_gen.format_for_telegram(seeds)
-                telegram.send_seeds(formatted)
-                logger.info("  Seeds sent. Waiting for reply...")
-
-                import time
-                start = time.time()
-                while time.time() - start < 1800:
-                    msg = telegram.get_latest_message(max_age_hours=0.5)
-                    if msg:
-                        user_reply = msg
-                        break
-                    time.sleep(10)
-
-            # Parse
-            if user_reply:
-                parsed = telegram.parse_seed_reply(user_reply)
-            else:
-                parsed = {"seed_number": 1, "modifier": None, "custom_idea": None}
-
-            if "seeds" not in dir():
-                seeds = seed_gen.generate_seeds(bias=user_reply if parsed.get("custom_idea") else "")
-
-            if parsed.get("custom_idea"):
-                custom_seeds = seed_gen.generate_seeds(bias=parsed["custom_idea"])
-                chosen_seed = custom_seeds[0]
-            elif parsed.get("seed_number"):
-                idx = min(parsed["seed_number"] - 1, len(seeds) - 1)
-                chosen_seed = seeds[idx]
-            else:
+            if file_seed:
+                # Direct seed from workflow input — skip topic selection
+                logger.info(f"  Direct seed: {file_seed[:60]}")
+                seeds = seed_gen.generate_seeds(bias=file_seed)
                 chosen_seed = seeds[0]
+            else:
+                # Generate 3 topics, send to Telegram, wait for pick
+                seeds = seed_gen.generate_seeds()
+                topic_msg = "🐾 Pick a topic:\n\n"
+                for i, s in enumerate(seeds[:3]):
+                    topic_msg += f"{i + 1}. {s.title} — \"{s.hook}\"\n\n"
+                topic_msg += "Reply 1, 2, or 3."
+                telegram.send_message(topic_msg)
 
-            modifier = parsed.get("modifier", "")
-            logger.info(f"  Chosen: '{chosen_seed.title}' ({chosen_seed.character})")
+                if not dry_run:
+                    pick = self._wait_for_number(telegram, ["1", "2", "3"])
+                    if pick:
+                        chosen_seed = seeds[int(pick) - 1]
+                        logger.info(f"  User picked topic {pick}: {chosen_seed.title}")
+                    else:
+                        chosen_seed = seeds[0]
+                        logger.info("  No response — using topic 1")
+                else:
+                    chosen_seed = seeds[0]
+
+            logger.info(f"  Topic: '{chosen_seed.title}' ({chosen_seed.character})")
 
             # ============================================
-            # STEP 2 + GATE 1: Generate 3 scripts, user picks one
+            # STEP 2: Script selection (3 options)
             # ============================================
             logger.info("[2/5] Generating 3 script options...")
-            options = scorer.generate_options(chosen_seed, modifier=modifier)
+            options = scorer.generate_options(chosen_seed)
 
-            # Send all 3 to Telegram
-            options_msg = f"📝 3 scripts for: \"{chosen_seed.title}\"\n\n"
+            script_msg = f"📝 Pick a script for \"{chosen_seed.title}\":\n\n"
             for i, opt in enumerate(options):
-                options_msg += f"{i + 1}. [{opt.tone.upper()}]\n{opt.script}\n\n"
-            options_msg += "Reply 1, 2, or 3 to pick."
-            telegram.send_message(options_msg)
+                script_msg += f"{i + 1}. [{opt.tone.upper()}]\n{opt.script}\n\n"
+            script_msg += "Reply 1, 2, or 3."
+            telegram.send_message(script_msg)
 
             if not dry_run:
-                # Wait for user to pick 1, 2, or 3
-                import time
-                picked = None
-                start = time.time()
-                while time.time() - start < 21600:  # 6 hours
-                    msg = telegram.get_latest_message(max_age_hours=0.5)
-                    if msg and msg.strip() in ("1", "2", "3"):
-                        picked = int(msg.strip()) - 1
-                        break
-                    time.sleep(10)
-
-                if picked is None:
-                    picked = 0  # Default to first option
-                    logger.info("  No response — using option 1")
-
-                scored = options[picked]
-                logger.info(f"  ✅ User picked option {picked + 1}: {scored.tone}")
+                pick = self._wait_for_number(telegram, ["1", "2", "3"])
+                if pick:
+                    scored = options[int(pick) - 1]
+                    logger.info(f"  User picked script {pick}: {scored.tone}")
+                else:
+                    scored = options[0]
+                    logger.info("  No response — using script 1")
             else:
                 scored = options[0]
 
             # ============================================
-            # STEP 3: Build Seedance prompts (4 clips)
+            # STEP 3: Build prompts + show for approval
             # ============================================
             logger.info("[3/5] Building clip prompts...")
 
-            # Split script into 4 short lines — ONE line per 5-second clip
-            import re
             clean_script = re.sub(r'\[.*?\]', '', scored.script).strip()
 
-            # Split by sentence endings, newlines, or periods
+            # Split into 4 sentences
             raw_lines = re.split(r'[.!?\n]+', clean_script)
             lines = [l.strip() for l in raw_lines if l.strip() and len(l.strip()) > 3]
 
-            # If still not 4 lines, split by word count
             if len(lines) < 4:
                 words = clean_script.split()
                 chunk_size = max(1, len(words) // 4)
@@ -209,12 +189,10 @@ class Orchestrator:
                 for i in range(0, len(words), chunk_size):
                     lines.append(" ".join(words[i:i + chunk_size]))
 
-            # Trim to exactly 4
             lines = lines[:4]
             while len(lines) < 4:
                 lines.append(lines[-1] if lines else "...")
 
-            # Build prompts — each clip gets a camera angle + dialogue
             character_desc = {
                 "orange_cat": "A fluffy real orange tabby cat with bright green eyes",
                 "golden_retriever": "A fluffy real golden retriever with big brown puppy eyes",
@@ -236,12 +214,11 @@ class Orchestrator:
                 )
                 clip_prompts.append({"number": i + 1, "line": line, "prompt": prompt})
 
-            # Send prompts for approval
-            prompts_msg = "🎬 Video prompts (4 clips × 5s):\n\n"
+            # Show prompts
+            prompts_msg = "🎬 Video plan (4 clips × 5s):\n\n"
             for cp in clip_prompts:
-                prompts_msg += f"Clip {cp['number']}: \"{cp['line']}\"\n"
-                prompts_msg += f"Camera: {CAMERA_ANGLES[(cp['number']-1) % 4]}\n\n"
-            prompts_msg += "YES to generate, NO + reason to regenerate."
+                prompts_msg += f"Clip {cp['number']}: \"{cp['line']}\"\nCamera: {CAMERA_ANGLES[(cp['number']-1) % 4]}\n\n"
+            prompts_msg += "Reply YES to generate, NO to skip."
             telegram.send_message(prompts_msg)
 
             if not dry_run:
@@ -252,36 +229,33 @@ class Orchestrator:
                     telegram.send_message("⏭️ Skipped. No credits spent.")
                     summary["status"] = "skipped"
                     return summary
-                logger.info("  ✅ Prompts approved! Generating...")
+                logger.info("  ✅ Prompts approved!")
 
             # ============================================
-            # STEP 4: Generate Seedance clips (parallel submission)
+            # STEP 4: Generate Seedance clips
             # ============================================
             logger.info("[4/5] Generating 4 Seedance clips...")
 
             clip_paths = []
             for cp in clip_prompts:
                 clip_path = output_dir / f"clip_{cp['number']:02d}.mp4"
-                logger.info(f"  Clip {cp['number']}: \"{cp['line'][:40]}...\"")
+                logger.info(f"  Clip {cp['number']}: \"{cp['line'][:40]}\"")
                 seedance.generate(cp["prompt"], clip_path, duration=5)
                 clip_paths.append(clip_path)
 
-            # Stitch all clips together
+            # Stitch + title
             stitched_path = output_dir / "stitched.mp4"
-            self._stitch_clips(clip_paths, stitched_path)
-
-            # Add title overlay
             final_path = output_dir / "final.mp4"
+            self._stitch_clips(clip_paths, stitched_path)
             self._add_title(stitched_path, final_path, chosen_seed.title)
             stitched_path.unlink(missing_ok=True)
-            logger.info(f"  Final video: {final_path}")
-
-            # Clean up individual clips
             for p in clip_paths:
                 p.unlink(missing_ok=True)
 
+            logger.info(f"  Final video: {final_path}")
+
             # ============================================
-            # STEP 5 + GATE 3: Final video approval
+            # STEP 5: Final video approval + upload
             # ============================================
             title = chosen_seed.title
             description = f"{clean_script[:150]}...\n\n#shorts #pets #funny #petcomedy #pawsandopinions"
