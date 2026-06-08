@@ -66,19 +66,36 @@ OUTPUT FORMAT — respond with valid JSON:
   "seeds": [
     {
       "rank": 1,
-      "title": "RENT SHOCK (2-3 words MAXIMUM, ALL CAPS, tells viewer what the video is about instantly)",
+      "title": "RENT SHOCK (2-3 words MAXIMUM, ALL CAPS)",
       "character": "orange_cat",
+      "character_2": "none OR white_cat OR golden_retriever OR senior_dog OR kitten",
       "topic": "rent",
       "bucket": "adulting",
       "hook": "So you pay money… to live in my house?",
-      "premise": "Orange cat realizes humans pay to live in her apartment. She's been the landlord this whole time.",
+      "premise": "Orange cat realizes humans pay to live in her apartment.",
       "tone": "savage",
-      "recommended_length_sec": 20,
-      "score": 8.7,
-      "score_breakdown": {"rewatchability": 9, "relatability": 9, "character": 8, "monetization": 9, "freshness": 7}
+      "setting": "cozy apartment living room, evening lamp light, bills scattered on coffee table",
+      "num_characters": 1,
+      "recommended_length_sec": 15,
+      "score": 8.7
     }
   ]
 }
+
+SETTING RULES:
+- Must be specific and match the topic (NOT always "cozy apartment")
+- Relationship drama: bedroom, kitchen counter, dining table, car interior
+- Money/work topics: home office desk, kitchen with laptop, cafe table
+- Pet classics: front door, hallway, near the vacuum, bathroom door
+- Current events: couch with TV in background, desk with phone showing news
+
+CHARACTER RULES (85% of videos should be TWO characters):
+- For RELATIONSHIP seeds: ALWAYS 2 characters (e.g., orange_cat + white_cat arguing)
+- For CURRENT EVENTS: ALWAYS 2 characters (cat telling friend dog the news, gossiping)
+- For WILD CARD: ALWAYS 2 characters
+- For PET CLASSIC: can be 1 OR 2 (your choice, but prefer 2)
+- character_2 = "none" ONLY for rare solo reaction videos (max 1 out of 5 seeds)
+- Mix up the pairings: orange_cat + white_cat, orange_cat + golden_retriever, kitten + senior_dog, etc.
 
 Generate exactly 5 seeds in THIS exact order:
 1. CURRENT EVENT — something trending THIS WEEK (tech layoffs, AI news, economy, stock market, pop culture drama)
@@ -95,11 +112,14 @@ class EpisodeSeed:
     rank: int
     title: str
     character: str
+    character_2: str
     topic: str
     bucket: str
     hook: str
     premise: str
     tone: str
+    setting: str
+    num_characters: int
     recommended_length_sec: int
     score: float
     score_breakdown: dict = field(default_factory=dict)
@@ -150,12 +170,15 @@ class SeedGenerator:
                 rank=s["rank"],
                 title=s["title"],
                 character=s["character"],
+                character_2=s.get("character_2", "none"),
                 topic=s.get("topic", ""),
                 bucket=s.get("bucket", ""),
                 hook=s["hook"],
                 premise=s["premise"],
                 tone=s.get("tone", "savage"),
-                recommended_length_sec=s.get("recommended_length_sec", 20),
+                setting=s.get("setting", "cozy apartment living room, warm afternoon light"),
+                num_characters=s.get("num_characters", 1),
+                recommended_length_sec=s.get("recommended_length_sec", 15),
                 score=s.get("score", 0),
                 score_breakdown=s.get("score_breakdown", {}),
             ))
@@ -178,10 +201,17 @@ class SeedGenerator:
             }.get(s.character, "🐾")
 
             cat_label = categories[i] if i < len(categories) else "🎲"
+            char2_emoji = {
+                "orange_cat": "🐱", "white_cat": "🐱", "golden_retriever": "🐕",
+                "senior_dog": "🐕‍🦺", "kitten": "🐈",
+            }.get(s.character_2, "")
+            duo_label = f" {char_emoji}+{char2_emoji}" if s.character_2 != "none" else f" {char_emoji} solo"
+
             lines.append(
-                f"{s.rank}. {cat_label} {char_emoji}\n"
+                f"{s.rank}. {cat_label}{duo_label}\n"
                 f"\"{s.title}\"\n"
                 f"Hook: \"{s.hook}\"\n"
+                f"📍 {s.setting[:40]}\n"
             )
 
         lines.append("Reply with a number (1-5)")

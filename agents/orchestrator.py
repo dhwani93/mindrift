@@ -252,21 +252,34 @@ class Orchestrator:
             while len(lines) < 2:
                 lines.append(lines[-1] if lines else "...")
 
-            character_desc = {
+            char_descs = {
                 "orange_cat": "a fluffy real orange tabby cat with bright green eyes",
+                "white_cat": "a sleek real white cat with blue eyes",
                 "golden_retriever": "a fluffy real golden retriever with big brown puppy eyes",
                 "senior_dog": "a real old gray-muzzled labrador with wise tired eyes",
                 "kitten": "a real tiny gray tabby kitten with enormous round eyes",
-            }.get(chosen_seed.character, "a fluffy real orange tabby cat")
+            }
+            char1 = char_descs.get(chosen_seed.character, "a fluffy real orange tabby cat")
+            char2 = char_descs.get(chosen_seed.character_2, "") if chosen_seed.character_2 != "none" else ""
 
-            setting = "Cozy apartment living room, warm golden afternoon light, bookshelf with plants behind, cream couch."
+            setting = chosen_seed.setting if chosen_seed.setting else "cozy apartment living room, warm golden afternoon light"
 
             # Build multi-shot prompt
             shots = []
             cameras = ["Close-up", "Medium wide shot", "Low angle close-up", "Pull-back wide shot"]
-            for i, line in enumerate(lines):
-                cam = cameras[i % len(cameras)]
-                shots.append(f"Shot {i+1}: {cam} of {character_desc} on couch in {setting}. Cat speaks: '{line}'")
+
+            if char2:
+                # Two characters — alternate who speaks
+                for i, line in enumerate(lines):
+                    cam = cameras[i % len(cameras)]
+                    speaker = char1 if i % 2 == 0 else char2
+                    both_desc = f"{char1} and {char2} sitting together"
+                    shots.append(f"Shot {i+1}: {cam} of {both_desc} in {setting}. {speaker} speaks: '{line}'")
+            else:
+                # Solo character
+                for i, line in enumerate(lines):
+                    cam = cameras[i % len(cameras)]
+                    shots.append(f"Shot {i+1}: {cam} of {char1} in {setting}. Cat speaks: '{line}'")
 
             multi_shot_prompt = " ".join(shots) + " No background music. No sound effects. Only character dialogue. Photorealistic, cinematic, warm lighting, 4K."
 
