@@ -68,7 +68,7 @@ OUTPUT FORMAT — respond with valid JSON:
       "rank": 1,
       "title": "RENT SHOCK (2-3 words MAXIMUM, ALL CAPS)",
       "character": "orange_cat",
-      "character_2": "white_cat OR golden_retriever OR parrot (SEASON 1 ONLY: these 3 + orange_cat)",
+      "character_2": "white_cat OR golden_retriever OR pickles (SEASON 1 ONLY: orange_cat is Luna, white_cat is Ms. Whiskers boss, golden_retriever is Milo boyfriend, pickles is the parrot pet)",
       "topic": "rent",
       "bucket": "adulting",
       "hook": "So you pay money… to live in my house?",
@@ -98,8 +98,9 @@ CHARACTER RULES (85% of videos should be TWO characters):
 - For WILD CARD: ALWAYS 2 characters
 - For PET CLASSIC: can be 1 OR 2 (your choice, but prefer 2)
 - character_2 = "none" ONLY for rare solo reaction videos (max 1 out of 5 seeds)
-- SEASON 1 pairings ONLY: orange_cat + white_cat, orange_cat + golden_retriever, orange_cat + parrot.
-- Pickles (parrot) is Luna's pet who repeats secrets. NOT a kitten.
+- SEASON 1 pairings ONLY: orange_cat + white_cat, orange_cat + golden_retriever, orange_cat + pickles.
+- CHARACTER KEYS: orange_cat = Luna, white_cat = Ms. Whiskers (boss), golden_retriever = Milo (boyfriend), pickles = Pickles (parrot pet who repeats secrets).
+- NEVER use "kitten", "senior_dog", or "parrot" as character keys. Use the names above.
 
 This is LUNA'S UNIVERSE. Luna is an orange tabby cat. All episodes are about HER life.
 SEASON 1 characters ONLY: Luna, Milo (boyfriend, golden retriever), Ms. Whiskers (boss, white cat), Pickles (parrot pet).
@@ -205,13 +206,13 @@ class SeedGenerator:
             char_emoji = {
                 "orange_cat": "🐱",
                 "golden_retriever": "🐕",
-                "parrot": "🦜",
+                "pickles": "🦜",
             }.get(s.character, "🐾")
 
             cat_label = categories[i] if i < len(categories) else "🎲"
             char2_emoji = {
                 "orange_cat": "🐱", "white_cat": "🐱", "golden_retriever": "🐕",
-                "parrot": "🦜",
+                "pickles": "🦜",
             }.get(s.character_2, "")
             duo_label = f" {char_emoji}+{char2_emoji}" if s.character_2 != "none" else f" {char_emoji} solo"
 

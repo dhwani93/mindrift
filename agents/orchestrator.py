@@ -236,8 +236,15 @@ class Orchestrator:
                     morning = daily.get("morning_scene", {})
                     theme = daily.get("theme", "something bad happened")
                     # Different character + setting for venting
-                    vent_to = "golden_retriever" if "ms_whiskers" in str(morning.get("characters", [])) else "ms_whiskers"
-                    vent_setting = "lunch cafe, outdoor patio, two chairs" if vent_to != "golden_retriever" else "apartment kitchen, coffee mugs on counter"
+                    # If morning was at work (with white_cat/ms_whiskers), vent to Milo at home
+                    # If morning was at home (with Milo), vent to someone else
+                    morning_chars = str(morning.get("characters", []))
+                    if "white_cat" in morning_chars or "ms_whiskers" in morning_chars:
+                        vent_to = "golden_retriever"  # Milo
+                        vent_setting = "apartment kitchen, coffee mugs on counter, evening light"
+                    else:
+                        vent_to = "white_cat"  # a colleague/friend at work
+                        vent_setting = "lunch cafe, outdoor patio, two chairs, afternoon sun"
 
                     chosen_script = writer.write(
                         topic=f"Luna vents about: {theme}. This morning: {morning.get('script_summary', '')}. Luna tells someone about it, they react.",

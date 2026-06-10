@@ -52,76 +52,59 @@ def get_character_voice(char_key: str) -> dict:
     return bible.get("characters", {}).get("luna", {})
 
 
-# Legacy mapping for backwards compatibility
+# Season 1 character voices (fallback if character bible not loaded)
+# MUST match character_bible.json exactly
 CHARACTER_VOICES = {
     "orange_cat": {
-        "name": "Boss Cat",
-        "personality": "Power-tripping, condescending, takes credit for everything, dramatic, treats everything like a corporate crisis",
-        "speech_style": "Short declarative statements. Uses 'I' a lot. Refers to self in third person sometimes. Pauses for dramatic effect by trailing off.",
+        "name": "Luna",
+        "personality": "Sassy, dramatic, relatable queen trying to hold it all together. Main character — everything happens to her.",
+        "speech_style": "Reactive. 'Excuse me?' 'I can't with this.' Uses 'I' when venting, 'you' when accusing. Eye-roll energy.",
+        "catchphrases": [
+            "Excuse me?",
+            "I can't with this.",
+            "That's it. I'm done.",
+            "No. No no no.",
+            "Are you SERIOUS right now?",
+        ],
+        "never_says": "Everything is fine. I'm not bothered.",
+    },
+    "white_cat": {
+        "name": "Ms. Whiskers",
+        "personality": "Luna's BOSS. Power-tripping, condescending, takes credit for everything, passive-aggressive corporate nightmare.",
+        "speech_style": "Cold, corporate. Short commands. 'I don't recall asking.' Uses 'I' with authority, 'you' with contempt.",
         "catchphrases": [
             "I don't recall asking for your opinion.",
             "That's above your pay grade.",
             "I built this from scratch... well, someone did.",
-            "This is MY house. You just live here.",
-            "Do you know who I am?",
             "Noted. Now get out.",
+            "Let's circle back. Actually, let's not.",
         ],
-        "never_says": "Please, sorry, thank you, I was wrong",
-    },
-    "white_cat": {
-        "name": "Employee Cat",
-        "personality": "Overworked, sarcastic under breath, passive-aggressive, keeps receipts, one day away from quitting",
-        "speech_style": "Deadpan delivery. Sarcastic. Uses 'I' when standing up for self, 'you' when accusing. Mutters to self.",
-        "catchphrases": [
-            "I literally did all the work.",
-            "My resignation letter has been ready since day one.",
-            "Sure. Great idea. That I had. Last week.",
-            "I'm not mad. I'm documenting.",
-            "Oh you want ME to fix it? Shocking.",
-        ],
-        "never_says": "You're right, boss. Great leadership.",
+        "never_says": "Great job. You're right. I was wrong.",
     },
     "golden_retriever": {
-        "name": "Husband/Wife Dog",
-        "personality": "Lovable, clueless, accidentally makes things worse while trying to help, brings comfort objects to solve problems",
-        "speech_style": "Earnest. Uses 'we' and 'I thought' a lot. Defends self with optimism. Gets confused by anger.",
+        "name": "Milo",
+        "personality": "Luna's BOYFRIEND. Lovable idiot, means well but chaos follows him, brings gifts to apologize, accidentally makes things worse.",
+        "speech_style": "Earnest, defensive. 'But it was on SALE!' Uses 'I' to defend, 'we' for team spirit nobody asked for.",
         "catchphrases": [
-            "But it was on SALE.",
+            "But it was on SALE!",
             "I thought you'd be happy!",
-            "I brought your slippers. Does that help?",
-            "Wait, are you mad? You LOOK mad.",
-            "I love you. Is that the wrong answer?",
             "I panicked and bought flowers.",
+            "Wait, are you mad?",
+            "I love you. Is that the wrong answer?",
         ],
         "never_says": "You're overreacting. Calm down.",
     },
-    "senior_dog": {
-        "name": "Senior Roommate",
-        "personality": "Tired, wise, has a routine, everything was better before, HR manager energy, done with everyone's nonsense",
-        "speech_style": "Dry, understated. Short sentences. Uses 'I' with exhaustion. Sighs before speaking.",
+    "pickles": {
+        "name": "Pickles",
+        "personality": "Luna's PET PARROT. No filter. Repeats the worst thing at the worst time. Says secrets out loud. Comedy bomb.",
+        "speech_style": "Short blurts. Repeats exact phrases Luna said in private. No awareness of timing.",
         "catchphrases": [
-            "In MY day, we respected boundaries.",
-            "I didn't sign up for this.",
-            "I need a nap after this conversation.",
-            "I've reviewed the situation. It's bad.",
-            "I'm too old for this.",
-            "That's not how we do things in this house.",
+            "LUNA SAID—",
+            "*repeats exact embarrassing quote*",
+            "AWK-WARD!",
+            "LUNA HATES HER—",
         ],
-        "never_says": "That sounds fun! Let's do it!",
-    },
-    "kitten": {
-        "name": "Chaos Roommate",
-        "personality": "Zero boundaries, infinite energy, doesn't understand rules, thinks everything belongs to them, accidentally destructive",
-        "speech_style": "Fast, breathless, no filter. Uses 'I' with total confidence. Doesn't understand why anything is a problem.",
-        "catchphrases": [
-            "What's yours is mine. That's the rule.",
-            "I didn't know that was important.",
-            "Why are you yelling? It's only 3am.",
-            "I made it better. You're welcome.",
-            "Was that yours? It's on the floor now.",
-            "I have SO much energy right now.",
-        ],
-        "never_says": "I'm sorry. I'll be quiet. I'll clean up.",
+        "never_says": "I'll keep that to myself.",
     },
 }
 
