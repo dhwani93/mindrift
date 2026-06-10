@@ -114,6 +114,13 @@ CHARACTER_VOICES = {
         "catchphrases": ["LUNA SAID—", "AWK-WARD!", "LUNA HATES HER—"],
         "never_says": "I'll keep that to myself.",
     },
+    "jade": {
+        "name": "Jade",
+        "personality": "Luna's human best friend and coworker. The only person who gives REAL advice. Down-to-earth, no drama, straight talk. Says 'girl, same' a lot.",
+        "speech_style": "Real talk. Supportive but blunt. 'Girl, same.' Uses 'I' when sharing her own experience, 'you' when giving advice. No sugarcoating.",
+        "catchphrases": ["Girl, same.", "Been there. Did NOT get the t-shirt.", "You deserve better. But also, same.", "That's not a red flag, that's a red BANNER.", "I say this with love — what the hell."],
+        "never_says": "That sounds fine. Don't worry about it. I'm sure it'll work out.",
+    },
     # === SEASON 2 ===
     "tiffany": {
         "name": "Tiffany",
@@ -218,51 +225,58 @@ Lines 4-7: ESCALATION (argument builds, new info revealed)
 Lines 8-10: PEAK (maximum tension)
 Lines 11-14: RESOLUTION + PUNCHLINE (twist ending)
 
+CHARACTER GENDERS (respect these ALWAYS):
+- Luna = female (she/her)
+- Milo = male (he/him)
+- Ms. Whiskers = female (she/her)
+- Pickles = gender neutral (it/they)
+- Jade = female (she/her) — human woman
+- Tiffany = female, Boba = female, Priya = female, Cleo = female, Suki = female
+- Dave = male, Marco = male, Gary = male, Rex = male, Karen = female
+
 GOOD DIALOGUE EXAMPLE (15s, office drama):
 ```
-ORANGE CAT: You took credit for MY presentation?
-WHITE CAT: I improved it.
-ORANGE CAT: You changed ONE slide.
-WHITE CAT: The important one.
-ORANGE CAT: It was the TITLE slide.
-WHITE CAT: And now it has MY name on it.
+LUNA: You took credit for MY presentation?
+MS. WHISKERS: I improved it.
+LUNA: You changed ONE slide.
+MS. WHISKERS: The important one.
+LUNA: It was the TITLE slide.
+MS. WHISKERS: And now it has MY name on it.
 ```
 (6 lines. Back and forth. Each reacts to the other. Punchline at end.)
 
 GOOD DIALOGUE EXAMPLE (15s, couple drama):
 ```
-ORANGE CAT: You spent four hundred dollars.
-GOLDEN RETRIEVER: It was an investment.
-ORANGE CAT: In SHOES?
-GOLDEN RETRIEVER: They were on sale!
-ORANGE CAT: That's not how sales work!
-GOLDEN RETRIEVER: I also bought you flowers. With your card.
+LUNA: You spent four hundred dollars.
+MILO: It was an investment.
+LUNA: In SHOES?
+MILO: They were on sale!
+LUNA: That's not how sales work!
+MILO: I also bought you flowers. With your card.
 ```
 
-GOOD DIALOGUE EXAMPLE (15s, roommates):
+GOOD DIALOGUE EXAMPLE (15s, Luna vents to Jade):
 ```
-SENIOR DOG: What happened to my food?
-KITTEN: I shared it. With myself.
-SENIOR DOG: That was a full bowl.
-KITTEN: I was hungry!
-SENIOR DOG: It's been TEN minutes since breakfast.
-KITTEN: Exactly. I could have died.
+LUNA: My boss stole my presentation. Again.
+JADE: Girl, same. My manager did that last Tuesday.
+LUNA: What did you do?
+JADE: Quiet quit. I just do the minimum now.
+LUNA: That's... actually genius.
+JADE: Welcome to corporate survival.
 ```
+
+BAD DIALOGUE (uses species names instead of character names — NEVER do this):
+```
+"ORANGE CAT: You know what really bothers me..."
+"GOLDEN RETRIEVER: What's that?"
+```
+(WRONG! Use LUNA, MILO, MS. WHISKERS, PICKLES, JADE — NEVER species names!)
 
 BAD DIALOGUE:
 ```
-CAT: You know what really bothers me about the economic situation?
-DOG: What's that?
-CAT: The fundamental problem with capitalism is...
-```
-(Too formal. Too long per line. Not funny. Not relatable. AI SLOP.)
-
-BAD DIALOGUE:
-```
-CAT: You did something bad.
-CAT: And it was really bad.
-CAT: I can't believe you did that.
-CAT: This is so bad.
+LUNA: You did something bad.
+LUNA: And it was really bad.
+LUNA: I can't believe you did that.
 ```
 (Only ONE character talking! Where's the conversation?!)
 

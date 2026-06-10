@@ -98,12 +98,12 @@ CHARACTER RULES (85% of videos should be TWO characters):
 - For WILD CARD: ALWAYS 2 characters
 - For PET CLASSIC: can be 1 OR 2 (your choice, but prefer 2)
 - character_2 = "none" ONLY for rare solo reaction videos (max 1 out of 5 seeds)
-- SEASON 1 pairings ONLY: orange_cat + white_cat, orange_cat + golden_retriever, orange_cat + pickles.
+- SEASON 1 pairings ONLY: orange_cat + white_cat, orange_cat + golden_retriever, orange_cat + pickles, orange_cat + jade.
 - CHARACTER KEYS: orange_cat = Luna, white_cat = Ms. Whiskers (boss), golden_retriever = Milo (boyfriend), pickles = Pickles (parrot pet who repeats secrets).
 - NEVER use "kitten", "senior_dog", or "parrot" as character keys. Use the names above.
 
 This is LUNA'S UNIVERSE. Luna is an orange tabby cat. All episodes are about HER life.
-SEASON 1 characters ONLY: Luna, Milo (boyfriend, golden retriever), Ms. Whiskers (boss, white cat), Pickles (parrot pet).
+SEASON 1 characters ONLY: Luna (orange_cat), Milo (golden_retriever, boyfriend), Ms. Whiskers (white_cat, boss), Pickles (pickles, parrot pet), Jade (jade, human female bestie/coworker).
 
 Generate exactly 5 seeds:
 1. 💼 WORK — Luna vs Ms. Whiskers at the office. Corporate nightmare. Setting: office, conference room, break room.

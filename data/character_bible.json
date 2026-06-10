@@ -66,6 +66,20 @@
       },
       "introduced_in_season": 1,
       "arc": "chaos agent throughout. Gets Luna in trouble constantly."
+    },
+    "jade": {
+      "species": "human",
+      "gender": "female",
+      "visual": "young woman with dark hair in a messy bun, casual outfit, coffee in hand, relatable energy",
+      "personality": "Luna's human best friend and coworker. Straight talk, no drama, real advice. The one person Luna is completely honest with.",
+      "speech_style": "Real talk. 'Girl, same.' Blunt but supportive. Shares her own disasters to make Luna feel better.",
+      "catchphrases": ["Girl, same.", "Been there. Did NOT get the t-shirt.", "That's not a red flag, that's a red BANNER.", "I say this with love — what the hell."],
+      "never_says": "That sounds fine. Don't worry about it.",
+      "relationships": {
+        "luna": "best friend and coworker (the only one who gives real advice)"
+      },
+      "introduced_in_season": 1,
+      "arc": "Luna's ride-or-die. Always there. Eventually helps Luna start the business."
     }
   },
 
