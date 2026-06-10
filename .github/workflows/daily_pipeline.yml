@@ -54,14 +54,18 @@ jobs:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
         run: |
-          # Determine slot based on UTC hour
-          HOUR=$(date -u +%H)
-          if [ "$HOUR" = "16" ]; then
+          # Determine slot based on trigger type and UTC hour
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             SLOT="morning"
-          elif [ "$HOUR" = "20" ]; then
-            SLOT="midday"
           else
-            SLOT="evening"
+            HOUR=$(date -u +%H)
+            if [ "$HOUR" = "16" ]; then
+              SLOT="morning"
+            elif [ "$HOUR" = "20" ]; then
+              SLOT="midday"
+            else
+              SLOT="evening"
+            fi
           fi
           python3 main.py --date $(date +%Y-%m-%d) --slot $SLOT
 

@@ -345,11 +345,12 @@ class Orchestrator:
                     telegram.send_message("⚠️ No morning scene found. Generating standalone.")
                     seeds = seed_gen.generate_seeds()
                     chosen_seed = seeds[0]
+                    scene_setting = chosen_seed.setting if hasattr(chosen_seed, 'setting') and chosen_seed.setting else "Luna's apartment, afternoon light"
                     chosen_script = writer.write(
                         topic=chosen_seed.premise or chosen_seed.title,
                         character_1=chosen_seed.character,
-                        character_2=chosen_seed.character_2 if chosen_seed.character_2 != "none" else "ms_whiskers",
-                        setting=chosen_seed.setting,
+                        character_2=chosen_seed.character_2 if chosen_seed.character_2 != "none" else "jade",
+                        setting=scene_setting,
                         duration=15,
                     )
                 else:
@@ -402,11 +403,12 @@ class Orchestrator:
                     telegram.send_message("⚠️ No earlier scenes found. Generating standalone.")
                     seeds = seed_gen.generate_seeds()
                     chosen_seed = seeds[0]
+                    scene_setting = chosen_seed.setting if hasattr(chosen_seed, 'setting') and chosen_seed.setting else "Luna's apartment living room, evening light"
                     chosen_script = writer.write(
                         topic=chosen_seed.premise or chosen_seed.title,
                         character_1=chosen_seed.character,
                         character_2=chosen_seed.character_2 if chosen_seed.character_2 != "none" else "golden_retriever",
-                        setting=chosen_seed.setting,
+                        setting=scene_setting,
                         duration=15,
                     )
                 else:
