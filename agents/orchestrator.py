@@ -298,11 +298,14 @@ class Orchestrator:
             summary_msg = f"🎬 Scene: \"{chosen_script.title}\"\n\n"
             for line in chosen_script.lines:
                 summary_msg += f"{line['speaker'].replace('_',' ').title()}: \"{line['line']}\"\n"
-            summary_msg += f"\n📍 {setting[:50]}\nReply YES to generate, NO to skip."
+            summary_msg += f"\n📍 {setting[:50]}\nReply YES/NO (auto-approves in 15 min)."
             telegram.send_message(summary_msg)
 
             if not dry_run:
-                approved, reason = telegram.wait_for_approval()
+                approved, reason = telegram.wait_for_approval(timeout_minutes=15)
+                if approved is None:
+                    approved = True  # Auto-approve after 15 min
+                    telegram.send_message("⏰ Auto-approved. Generating...")
                 if approved is not True:
                     if reason:
                         save_feedback("prompt_feedback", reason)
@@ -333,7 +336,10 @@ class Orchestrator:
             else:
                 sent = telegram.send_video_for_approval(str(final_path), title, dialogue, 15)
                 if sent:
-                    approved, reason = telegram.wait_for_approval()
+                    approved, reason = telegram.wait_for_approval(timeout_minutes=15)
+                    if approved is None:
+                        approved = True  # Auto-approve after 15 min
+                        telegram.send_message("⏰ Auto-approved. Uploading...")
                     if approved is True:
                         uploader.run(long_form_path=final_path, short_paths=[], title=title,
                                      description=description, tags=tags, thumbnail_path=final_path, dry_run=False)

@@ -243,12 +243,29 @@ SARCASM IS THE VOICE:
 - "Sure, take credit. I only spent THREE WEEKS on it."
 - The audience should feel the eye-roll through the screen.
 
+DAY AWARENESS:
+- WEEKDAYS (Mon-Fri): Luna can be anywhere — work, home ranting about work, out with friends.
+- WEEKENDS (Sat-Sun): NO WORK. No Ms. Whiskers. No office. Luna is home, with friends, shopping, brunch, date night.
+- HOLIDAYS: NO WORK. Episode should reference the holiday naturally.
+- EXCEPTION: Only if user explicitly requests a work topic on weekend.
+
+HOLIDAY/EVENT AWARENESS (reference when applicable):
+- Amazon Prime Day → shopping addiction
+- Thanksgiving → cooking disaster, in-laws
+- Christmas → gift drama, returns
+- Valentine's Day → expectation vs reality
+- Tax season → rage
+- Black Friday → shopping frenzy
+- Super Bowl → Milo obsessed, Luna doesn't care
+- New Year → resolutions that last 1 day
+
 NEVER:
 - Explain the joke
 - Have both characters agree (conflict = comedy)
 - Same emotional energy every line (vary: angry → confused → resigned → explosive)
 - End flat — LAST line must be the biggest laugh
 - Be clever instead of relatable
+- Put Luna at WORK on a weekend or holiday
 
 OUTPUT FORMAT — valid JSON:
 {
