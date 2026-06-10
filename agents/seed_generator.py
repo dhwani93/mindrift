@@ -100,16 +100,19 @@ CHARACTER RULES (85% of videos should be TWO characters):
 - character_2 = "none" ONLY for rare solo reaction videos (max 1 out of 5 seeds)
 - Mix up the pairings: orange_cat + white_cat, orange_cat + golden_retriever, kitten + senior_dog, etc.
 
-Generate exactly 5 seeds in THIS exact order:
-1. OFFICE DRAMA SERIES — Orange cat (terrible boss) + White cat (suffering employee) in a corporate office. Think: performance reviews, getting fired, passive-aggressive emails, stealing credit, meaningless meetings. Setting MUST be a corporate environment.
-2. COUPLE DRAMA SERIES — Orange cat + Golden retriever as married couple. Think: spending fights, forgot anniversary, in-laws, thermostat wars, one partner being dramatic. Setting MUST be home/restaurant/car.
-3. ROOMMATES SERIES — Senior dog + Kitten as mismatched roommates. Think: kitten too loud, eating senior's food, not cleaning, 3am energy, bringing friends over. Setting MUST be shared apartment.
-4. CURRENT EVENT — something trending THIS WEEK, using ANY two characters gossiping about it in an ABSURD setting (newsroom, courtroom, stock trading floor).
-5. WILD CARD — the weirdest, most absurd idea in the most unexpected setting. Think: cat as sushi chef, dog as yoga instructor, kitten running a startup board meeting.
+This is LUNA'S UNIVERSE. Luna is an orange tabby cat. All episodes are about HER life.
+SEASON 1 characters ONLY: Luna, Milo (boyfriend, golden retriever), Ms. Whiskers (boss, white cat), Pickles (parrot pet).
 
-EVERY seed must have an UNEXPECTED/ABSURD setting. No "cozy apartment living room."
-Every hook must be a specific funny line of dialogue.
-Title format for series: "FIRED PT.X", "$500 SHOES PT.X", "3AM AGAIN PT.X" — include episode number."""
+Generate exactly 5 seeds:
+1. 💼 WORK — Luna vs Ms. Whiskers at the office. Corporate nightmare. Setting: office, conference room, break room.
+2. 💕 RELATIONSHIP — Luna and Milo. Couple drama. Setting: kitchen, bedroom, restaurant, car, IKEA.
+3. 🏠 HOME — Luna dealing with Pickles (parrot repeats secrets). Setting: apartment, but make it funny.
+4. 📰 TRENDING — Luna reacts to a trending topic. She discusses it with Milo or Ms. Whiskers. Setting: ABSURD.
+5. 🤪 WILD CARD — Luna in the most unexpected situation possible. Absurd setting, absurd scenario.
+
+EVERY setting must be SPECIFIC and VISUAL (not "apartment"). Each seed has a different setting from the others.
+Every hook is a specific funny line of dialogue.
+Title: 2-3 words ALL CAPS."""
 
 
 @dataclass
@@ -194,7 +197,7 @@ class SeedGenerator:
 
     def format_for_telegram(self, seeds: list[EpisodeSeed]) -> str:
         """Format seeds for Telegram message."""
-        categories = ["💼 OFFICE", "💕 COUPLE", "🏠 ROOMMATES", "📰 TRENDING", "🤪 WILD CARD"]
+        categories = ["💼 WORK", "💕 RELATIONSHIP", "🏠 HOME", "📰 TRENDING", "🤪 WILD CARD"]
 
         lines = ["🐾 Today's episode seeds\n"]
         for i, s in enumerate(seeds):

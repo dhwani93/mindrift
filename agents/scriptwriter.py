@@ -30,8 +30,29 @@ logger = logging.getLogger(__name__)
 
 CONFIG_PATH = Path(__file__).parent.parent / "config" / "settings.yaml"
 SERIES_TRACKER_PATH = Path(__file__).parent.parent / "data" / "series_tracker.json"
+CHARACTER_BIBLE_PATH = Path(__file__).parent.parent / "data" / "character_bible.json"
 
-# Character voice bible — how each character ACTUALLY talks
+
+def load_character_bible() -> dict:
+    """Load character bible from JSON."""
+    if CHARACTER_BIBLE_PATH.exists():
+        return json.loads(CHARACTER_BIBLE_PATH.read_text())
+    return {"characters": {}}
+
+
+def get_character_voice(char_key: str) -> dict:
+    """Get a character's voice data from the bible."""
+    bible = load_character_bible()
+    # Check all character pools
+    for pool in ["characters", "season_2_characters", "season_3_characters"]:
+        chars = bible.get(pool, {})
+        if char_key in chars:
+            return chars[char_key]
+    # Fallback
+    return bible.get("characters", {}).get("luna", {})
+
+
+# Legacy mapping for backwards compatibility
 CHARACTER_VOICES = {
     "orange_cat": {
         "name": "Boss Cat",
@@ -232,21 +253,29 @@ class Scriptwriter:
         return "\nThis is episode 1. Establish the characters and their dynamic."
 
     def _get_character_context(self, char1: str, char2: str) -> str:
-        """Get character voice descriptions."""
-        c1 = CHARACTER_VOICES.get(char1, CHARACTER_VOICES["orange_cat"])
-        c2 = CHARACTER_VOICES.get(char2, CHARACTER_VOICES["white_cat"])
-        return f"""
-CHARACTER 1 — {c1['name']} ({char1}):
-Personality: {c1['personality']}
-Speech style: {c1['speech_style']}
-Example lines: {', '.join(c1['catchphrases'][:3])}
-NEVER says: {c1['never_says']}
+        """Get character voice descriptions from bible."""
+        c1 = get_character_voice(char1)
+        c2 = get_character_voice(char2)
+        if not c1:
+            c1 = CHARACTER_VOICES.get(char1, CHARACTER_VOICES["orange_cat"])
+        if not c2:
+            c2 = CHARACTER_VOICES.get(char2, CHARACTER_VOICES["white_cat"])
+        def fmt(c, key):
+            name = c.get('name', key.replace('_', ' ').title())
+            personality = c.get('personality', 'sassy and dramatic')
+            speech = c.get('speech_style', 'casual and reactive')
+            phrases = c.get('catchphrases', ['Excuse me?'])
+            never = c.get('never_says', 'nothing specific')
+            return f"""{name} ({key}):
+Personality: {personality}
+Speech style: {speech}
+Example lines: {', '.join(phrases[:3]) if isinstance(phrases, list) else phrases}
+NEVER says: {never}"""
 
-CHARACTER 2 — {c2['name']} ({char2}):
-Personality: {c2['personality']}
-Speech style: {c2['speech_style']}
-Example lines: {', '.join(c2['catchphrases'][:3])}
-NEVER says: {c2['never_says']}
+        return f"""
+CHARACTER 1 — {fmt(c1, char1)}
+
+CHARACTER 2 — {fmt(c2, char2)}
 """
 
     @retry(max_attempts=3, base_delay=2.0)

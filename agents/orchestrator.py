@@ -23,20 +23,27 @@ CONFIG_PATH = Path(__file__).parent.parent / "config" / "settings.yaml"
 SERIES_TRACKER_PATH = Path(__file__).parent.parent / "data" / "series_tracker.json"
 DAILY_MODE_PATH = Path(__file__).parent.parent / "data" / "daily_mode.json"
 
-CHAR_DESCS = {
-    "orange_cat": "a fluffy real orange tabby cat with bright green eyes",
-    "white_cat": "a sleek real white cat with blue eyes",
-    "golden_retriever": "a fluffy real golden retriever with big brown puppy eyes",
-    "senior_dog": "a real old gray-muzzled labrador with wise tired eyes",
-    "kitten": "a real tiny gray tabby kitten with enormous round eyes",
-}
+CHARACTER_BIBLE_PATH = Path(__file__).parent.parent / "data" / "character_bible.json"
 
-# Series definitions
-SERIES = {
-    "office_drama": {"char1": "orange_cat", "char2": "white_cat"},
-    "couple_drama": {"char1": "orange_cat", "char2": "golden_retriever"},
-    "roommates": {"char1": "senior_dog", "char2": "kitten"},
-}
+
+def get_char_visual(char_key: str) -> str:
+    """Get character visual description from bible."""
+    if CHARACTER_BIBLE_PATH.exists():
+        bible = json.loads(CHARACTER_BIBLE_PATH.read_text())
+        for pool in ["characters", "season_2_characters", "season_3_characters"]:
+            chars = bible.get(pool, {})
+            if char_key in chars:
+                return chars[char_key].get("visual", f"a {char_key.replace('_', ' ')}")
+    # Fallback
+    fallbacks = {
+        "orange_cat": "fluffy orange tabby cat, bright green eyes, expressive face",
+        "white_cat": "sleek white cat, cold blue eyes, perfect posture",
+        "golden_retriever": "fluffy golden retriever, big dopey brown puppy eyes",
+        "senior_dog": "older gray-muzzled labrador, tired wise eyes, reading glasses",
+        "kitten": "tiny gray tabby kitten, enormous round eyes",
+        "parrot": "colorful green and red parrot, head tilted",
+    }
+    return fallbacks.get(char_key, f"a {char_key.replace('_', ' ')}")
 
 
 def load_daily_mode() -> dict:
@@ -115,19 +122,30 @@ class Orchestrator:
         if result.returncode != 0:
             raise RuntimeError(f"FFmpeg failed ({description}): {result.stderr[-200:]}")
 
-    def _add_title(self, input_path: Path, output_path: Path, title: str) -> None:
+    def _add_title(self, input_path: Path, output_path: Path, title: str, episode_num: int = 0) -> None:
         safe_title = title.upper().replace("'", "\u2019").replace(":", "\\:")
         font_path = Path(__file__).parent.parent / "assets" / "fonts" / "BebasNeue-Regular.ttf"
         font_arg = f":fontfile={font_path}" if font_path.exists() else ""
+
+        # Title at top + episode number at bottom-left
+        filters = (
+            f"drawtext=text='{safe_title}'{font_arg}"
+            f":fontsize=72:fontcolor=white"
+            f":borderw=5:bordercolor=black"
+            f":shadowcolor=black@0.6:shadowx=3:shadowy=3"
+            f":x=(w-text_w)/2:y=h*0.06"
+        )
+        if episode_num > 0:
+            filters += (
+                f",drawtext=text='EP.{episode_num}'{font_arg}"
+                f":fontsize=28:fontcolor=white@0.7"
+                f":borderw=2:bordercolor=black@0.5"
+                f":x=30:y=h*0.92"
+            )
+
         cmd = [
             "ffmpeg", "-y", "-i", str(input_path),
-            "-vf", (
-                f"drawtext=text='{safe_title}'{font_arg}"
-                f":fontsize=72:fontcolor=white"
-                f":borderw=5:bordercolor=black"
-                f":shadowcolor=black@0.6:shadowx=3:shadowy=3"
-                f":x=(w-text_w)/2:y=h*0.06"
-            ),
+            "-vf", filters,
             "-c:v", "libx264", "-preset", "fast", "-crf", "23",
             "-c:a", "copy", "-pix_fmt", "yuv420p",
             str(output_path),
@@ -170,15 +188,25 @@ class Orchestrator:
         cameras = ["Close-up", "Medium wide shot", "Low angle close-up", "Pull-back wide shot"]
         shots = []
 
+        # Last shot = zoom in + silence for punchline beat
+        total = len(script.lines)
         for i, line_data in enumerate(script.lines):
             speaker = line_data["speaker"]
             dialogue = line_data["line"]
-            char_desc = CHAR_DESCS.get(speaker, "a fluffy real cat")
+            char_desc = get_char_visual(speaker)
             cam = cameras[i % len(cameras)]
-            shots.append(
-                f"Shot {i+1}: {cam} of {char_desc} in {setting}. "
-                f"Character speaks: '{dialogue}'"
-            )
+
+            if i == total - 1:
+                # Last shot: zoom in on speaker for punchline + 1s silence
+                shots.append(
+                    f"Shot {i+1}: Slow zoom-in close-up of {char_desc} in {setting}. "
+                    f"Character speaks: '{dialogue}' then 1 second of silence, holding expression."
+                )
+            else:
+                shots.append(
+                    f"Shot {i+1}: {cam} of {char_desc} in {setting}. "
+                    f"Character speaks: '{dialogue}'"
+                )
 
         prompt = " ".join(shots)
         prompt += " No background music. No sound effects. Only character dialogue. Photorealistic, cinematic, warm lighting, 4K."
@@ -237,7 +265,7 @@ class Orchestrator:
                     cat = categories[i] if i < len(categories) else "🎲"
                     char2_label = f"+{s.character_2.replace('_',' ')}" if s.character_2 != "none" else " solo"
                     topic_msg += f"{i+1}. {cat} {s.title} ({s.character.replace('_',' ')}{char2_label})\n\"{s.hook}\"\n📍 {s.setting[:40]}\n\n"
-                topic_msg += "6. ✍️ YOUR IDEA\n\nReply 1-6 (15 min, then auto-picks #1)."
+                topic_msg += "6. ✍️ YOUR IDEA\n\n💭 Or share what's on YOUR mind today — I'll turn it into Luna's story.\n\nReply 1-6 or type your thought (15 min, then auto-picks #1)."
                 telegram.send_message(topic_msg)
 
                 if not dry_run:
@@ -374,9 +402,11 @@ class Orchestrator:
             clip_path = output_dir / "clip.mp4"
             seedance.generate(seedance_prompt, clip_path, duration=15)
 
-            # Add title
+            # Get episode number and add title + EP number
+            tracker = load_tracker()
+            ep_num = tracker.get("global_episode_count", 0) + 1
             final_path = output_dir / "final.mp4"
-            self._add_title(clip_path, final_path, chosen_script.title)
+            self._add_title(clip_path, final_path, chosen_script.title, episode_num=ep_num)
             clip_path.unlink(missing_ok=True)
 
             # ============================================
@@ -403,9 +433,10 @@ class Orchestrator:
                             tags=tags, thumbnail_path=final_path, dry_run=False,
                         )
                         telegram.send_completion(title, 15)
-                        # Track series
-                        if series_key:
-                            mark_series_used(series_key, title)
+                        # Increment global episode counter
+                        tracker = load_tracker()
+                        tracker["global_episode_count"] = tracker.get("global_episode_count", 0) + 1
+                        save_tracker(tracker)
                     elif approved is False:
                         save_feedback("video_feedback", reason)
                         logger.info(f"  ❌ Rejected: {reason[:60]}")

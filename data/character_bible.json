@@ -1,0 +1,167 @@
+{
+  "universe": "Luna's Life",
+  "current_season": 1,
+  "global_episode_count": 0,
+  "season_start_date": null,
+
+  "characters": {
+    "luna": {
+      "species": "orange tabby cat",
+      "gender": "female",
+      "visual": "fluffy orange tabby cat, bright green eyes, expressive face, slightly dramatic expressions",
+      "personality": "sassy, dramatic, relatable queen trying to hold it all together. She's the audience — everything happens to her.",
+      "speech_style": "Reactive. 'Excuse me?' 'I can't with this.' Uses 'I' when venting, 'you' when accusing. Dramatic pauses.",
+      "catchphrases": ["Excuse me?", "I can't with this.", "That's it. I'm done.", "No. No no no.", "Are you SERIOUS right now?"],
+      "never_says": "Everything is fine. I'm not bothered. That's okay.",
+      "relationships": {
+        "milo": "boyfriend (lovable idiot)",
+        "ms_whiskers": "terrible boss",
+        "pickles": "pet parrot (says secrets out loud)",
+        "tiffany": "best friend (overdressed drama queen)",
+        "boba": "younger sister (chaotic, broke)"
+      },
+      "introduced_in_season": 1,
+      "arc": "stressed office worker → quits → starts own business → gets engaged → married → mom"
+    },
+    "milo": {
+      "species": "golden retriever",
+      "gender": "male",
+      "visual": "fluffy golden retriever, big dopey brown puppy eyes, always looks slightly confused but happy",
+      "personality": "means well but chaos follows him. Tries to fix things and makes them worse. Brings gifts to apologize.",
+      "speech_style": "Earnest, defensive. 'But it was on SALE!' 'I thought you'd be happy!' Uses 'I' to defend, 'we' for team spirit nobody asked for.",
+      "catchphrases": ["But it was on SALE!", "I thought you'd be happy!", "I panicked and bought flowers.", "Wait, are you mad?", "I love you. Is that the wrong answer?"],
+      "never_says": "You're overreacting. Calm down.",
+      "relationships": {
+        "luna": "girlfriend",
+        "dave": "best friend (gives bad advice)",
+        "rex": "gym bro friend"
+      },
+      "introduced_in_season": 1,
+      "arc": "boyfriend → proposes → husband → dad → still clueless"
+    },
+    "ms_whiskers": {
+      "species": "white cat",
+      "gender": "female",
+      "visual": "sleek white cat, cold blue eyes, perfect posture, always looks like she's judging you",
+      "personality": "power-tripping corporate boss. Takes credit for everything. Passive-aggressive. Thinks she built the company.",
+      "speech_style": "Cold, corporate. Short commands. 'I don't recall asking.' Uses 'I' with authority, 'you' with contempt.",
+      "catchphrases": ["I don't recall asking for your opinion.", "That's above your pay grade.", "I built this from scratch. Well, someone did.", "Noted. Now get out.", "Let's circle back. Actually, let's not."],
+      "never_says": "Great job. You're right. I was wrong.",
+      "relationships": {
+        "luna": "her best employee (who she treats worst)"
+      },
+      "introduced_in_season": 1,
+      "arc": "terrible boss throughout. Eventually Luna quits and Ms. Whiskers has to do actual work."
+    },
+    "pickles": {
+      "species": "parrot",
+      "gender": "unknown",
+      "visual": "colorful green and red parrot, perched on furniture, head tilts when about to say something devastating",
+      "personality": "no filter. Repeats the worst thing at the worst time. Says secrets out loud. Comedy bomb.",
+      "speech_style": "Short blurts. Repeats exact phrases Luna said in private. 'LUNA SAID YOU'RE AN IDIOT!' No awareness of timing.",
+      "catchphrases": ["LUNA SAID—", "*repeats exact embarrassing quote*", "*head tilt* ...awk-ward"],
+      "never_says": "I'll keep that to myself.",
+      "relationships": {
+        "luna": "pet (Luna's biggest liability)"
+      },
+      "introduced_in_season": 1,
+      "arc": "chaos agent throughout. Gets Luna in trouble constantly."
+    }
+  },
+
+  "season_2_characters": {
+    "tiffany": {
+      "species": "Persian cat",
+      "gender": "female",
+      "visual": "fluffy Persian cat, glamorous, always overdressed, designer accessories, dramatic eyelashes",
+      "personality": "rich friend, overdressed for everything, new boyfriend every 3 episodes, 'darling' energy, dramatic about everything",
+      "speech_style": "Dramatic. 'Darling, you won't BELIEVE.' Talks about herself. Uses 'I' constantly. Name-drops.",
+      "catchphrases": ["Darling, you won't BELIEVE what happened.", "He was perfect. Until he wasn't.", "I'm not overdressed. You're all underdressed.", "This calls for champagne."],
+      "never_says": "I'll wear something casual. I'm fine being single.",
+      "introduced_in_season": 2
+    },
+    "boba": {
+      "species": "kitten",
+      "gender": "female",
+      "visual": "tiny gray tabby kitten, enormous round eyes, messy fur, looks innocent but is chaos",
+      "personality": "Luna's younger sister. Broke but acts expensive. Crashes on Luna's couch. Zero responsibility. Gen Z energy.",
+      "speech_style": "Fast, unbothered. 'It's called self-care.' Uses 'I' with complete confidence about terrible decisions.",
+      "catchphrases": ["It's called self-care.", "I'll pay you back. Eventually.", "Why are you stressing? Just manifest it.", "What's yours is mine. We're family."],
+      "never_says": "I'll get a job. I'll move out. That's too expensive for me.",
+      "introduced_in_season": 2
+    },
+    "dave": {
+      "species": "senior dog",
+      "gender": "male",
+      "visual": "older gray-muzzled labrador, tired wise eyes, small reading glasses, dignified but exhausted",
+      "personality": "Milo's best friend. Gives unsolicited advice that's technically correct but unhelpful. HR manager energy.",
+      "speech_style": "Dry, understated. 'In MY day...' Sighs before speaking. Uses 'I' with authority of someone who's seen too much.",
+      "catchphrases": ["In MY day, we handled things differently.", "I didn't ask, but here's my opinion.", "Have you considered... not doing that?", "I need a nap after this conversation."],
+      "never_says": "That sounds fun! Great idea! Let's be spontaneous!",
+      "introduced_in_season": 2
+    }
+  },
+
+  "season_3_characters": {
+    "priya": {
+      "species": "Siamese cat",
+      "gender": "female",
+      "visual": "elegant Siamese cat, dark face markings, expressive blue eyes, always looks slightly stressed",
+      "personality": "ALWAYS has in-law problems. Every conversation leads back to her mother-in-law. Boundary issues personified.",
+      "speech_style": "Starts normal, spirals into MIL rant. 'You won't believe what she said THIS time.' Uses 'she' for MIL with venom.",
+      "catchphrases": ["You won't believe what she said THIS time.", "She showed up. Unannounced. AGAIN.", "It's not about the food. It's about RESPECT.", "I'm one comment away from moving countries."],
+      "never_says": "My mother-in-law is wonderful. She means well.",
+      "introduced_in_season": 3
+    },
+    "marco": {
+      "species": "bulldog",
+      "gender": "male",
+      "visual": "stocky bulldog, always wearing something slightly too flashy, sunglasses indoors, 'entrepreneur' energy",
+      "personality": "ALWAYS has money problems but pitches get-rich-quick schemes. Crypto, NFTs, pyramid schemes. Confidently wrong.",
+      "speech_style": "Sales pitch energy. 'Bro, listen. This is different.' Uses 'we' to drag others into schemes.",
+      "catchphrases": ["Bro, hear me out.", "This is NOT a pyramid scheme.", "I just need a small investment.", "Trust me, I did the research.", "It's called passive income."],
+      "never_says": "Maybe I should save money. That sounds risky. I should get a regular job.",
+      "introduced_in_season": 3
+    },
+    "karen_mil": {
+      "species": "poodle",
+      "gender": "female",
+      "visual": "well-groomed poodle, pearl necklace, looks elegant but eyes are judging EVERYTHING",
+      "personality": "Milo's mom. Passive-aggressive compliments. Thinks nobody is good enough for her son. Weaponized politeness.",
+      "speech_style": "Sweet voice, devastating words. 'Oh Luna, you cooked? How... brave.' Uses 'dear' before insults.",
+      "catchphrases": ["Oh dear, you tried.", "How... interesting.", "My Milo deserves...", "I'm not saying anything, BUT...", "When I was your age, I had already..."],
+      "never_says": "Luna is perfect for my son. I love what you've done with the place.",
+      "introduced_in_season": 3
+    }
+  },
+
+  "future_characters": {
+    "cleo": {"species": "black cat", "trait": "toxic narcissist friend, makes everything about herself", "introduced_in_season": 4},
+    "gary": {"species": "corgi", "trait": "professional complainer, nothing is ever good enough", "introduced_in_season": 4},
+    "suki": {"species": "calico cat", "trait": "wellness guru, essential oils solve everything", "introduced_in_season": 4},
+    "rex": {"species": "German shepherd", "trait": "gym bro, everything is a workout metaphor, zero EQ", "introduced_in_season": 4}
+  },
+
+  "settings_pool": [
+    "corporate office with cubicles and whiteboard",
+    "apartment kitchen, morning light, coffee mugs",
+    "apartment living room, evening, couch with blankets",
+    "fancy restaurant, candles, white tablecloth",
+    "car interior, traffic visible through windows",
+    "brunch cafe, outdoor patio, mimosas on table",
+    "nightclub, neon lights, blurry dancing animals in background",
+    "grocery store aisle, shopping cart",
+    "gym, tiny weights, exercise equipment",
+    "therapist office, couch, tissue box",
+    "airport gate, departure board visible",
+    "IKEA store, lost between shelves",
+    "yoga class, mats on floor",
+    "hair salon, getting pampered",
+    "park bench, joggers in background",
+    "bedroom, 3am, phone screen glow",
+    "home office, zoom call on laptop screen",
+    "coffee shop, laptops everywhere",
+    "wedding venue, decorations half done",
+    "hospital waiting room"
+  ]
+}
