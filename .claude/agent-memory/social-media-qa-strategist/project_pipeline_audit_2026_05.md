@@ -14,6 +14,7 @@ Top critical bugs:
 - characters_introduced tracking uses speaker names but comparison uses character keys -- intro detection NEVER works, every episode flags every character as first appearance
 - Morning topic picker shows option 6 but code only accepts 1-5
 - Content policy fallback regex in seedance_video.py doesn't match actual prompt format
+- **TITLE-CONTENT MISMATCH** (found 2026-05-25): YouTube title uses chosen_script.title (LLM-invented) not chosen_seed.title (user-selected). The scriptwriter LLM can echo the seed topic as its title while writing completely unrelated dialogue. Two-pronged fix needed: (1) use seed title for YouTube metadata, (2) add topic-anchoring rule to scriptwriter system prompt. ALSO: midday/evening slots don't define chosen_seed in their main branch, so switching to chosen_seed.title would crash -- need a separate episode_title variable set in all branches.
 
 **Why:** These bugs cause broken video prompts, narratively nonsensical scenes, and perpetual "first appearance" intros.
 

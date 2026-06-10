@@ -452,11 +452,14 @@ class Orchestrator:
             tracker = load_tracker()
             ep_num = tracker.get("global_episode_count", 0) + 1
             final_path = output_dir / "final.mp4"
-            self._add_title(clip_path, final_path, chosen_script.title, ep_num)
+            video_title_for_overlay = chosen_seed.title if hasattr(chosen_seed, 'title') else chosen_script.title
+            self._add_title(clip_path, final_path, video_title_for_overlay, ep_num)
             clip_path.unlink(missing_ok=True)
 
             # Final approval + upload
-            yt_title = f"{chosen_script.title} | Luna's Life EP.{ep_num} #shorts"
+            # Use seed title (matches the topic), NOT script title (may be wrong)
+            video_title = chosen_seed.title if hasattr(chosen_seed, 'title') else chosen_script.title
+            yt_title = f"{video_title} | Luna's Life EP.{ep_num} #shorts"
             dialogue = " | ".join(l["line"] for l in chosen_script.lines[:3])
             description = (
                 f"🐾 {chosen_script.title} — Luna's Life EP.{ep_num}\n\n"
