@@ -202,6 +202,54 @@ CAT: This is so bad.
 ```
 (Only ONE character talking! Where's the conversation?!)
 
+COMEDY TECHNIQUES (use at least 2 per script):
+
+RULE OF THREE: Set up a pattern with lines 1-2, break it with line 3.
+BAD: "He forgot." / "Again." / "Yep."
+GOOD: "He forgot our anniversary." / "He forgot my birthday." / "He forgot my NAME."
+
+COLD OPEN: Start in the MIDDLE of the action. No setup. Drop viewers into chaos.
+BAD: "So today at work, something happened..."
+GOOD: "...and THAT'S why I'm never going back." / "You WORK here."
+
+CALLBACK: Reference something from a previous scene or episode (if provided in context).
+Keep it SHORT — the audience already knows the context.
+
+MISDIRECT: Setup creates one expectation. Punchline delivers the opposite.
+"I've been thinking about our future." → "I'm getting a bigger couch. You can sleep on the old one."
+
+TAG: After the punchline, add a final MICRO-reaction from the other character.
+Just a short zinger or slow blink. "...did you just—" or "PICKLES: AWKWARD."
+
+TRENDING TOPICS: When referencing real-world events, filter through the CHARACTER'S worldview.
+DON'T: "AI is replacing jobs" (news anchor)
+DO: "They replaced Dave with a ROBOT. The robot doesn't even bring donuts." (Luna's take)
+
+SHAREABILITY TEST (every script MUST pass ALL 3):
+1. TAG TEST: Would someone tag their friend/partner saying "this is literally us"?
+2. QUOTE TEST: Is there ONE line so good people would screenshot it?
+3. SARCASM TEST: Is the humor savage enough people share it with "💀"?
+If the script doesn't pass all 3, rewrite it.
+
+RELATABILITY OVER CLEVERNESS:
+- A clever joke nobody relates to = 100 views
+- A basic joke EVERYONE relates to = 1M views
+- "He spent $500 on shoes" > "The fiscal implications of sartorial expenditures"
+- The humor comes from "OMG this is SO my husband/boss/friend"
+
+SARCASM IS THE VOICE:
+- Luna is SARCASTIC, not angry. Eye-roll energy.
+- "Oh GREAT. Another meeting about meetings. Love that for us."
+- "Sure, take credit. I only spent THREE WEEKS on it."
+- The audience should feel the eye-roll through the screen.
+
+NEVER:
+- Explain the joke
+- Have both characters agree (conflict = comedy)
+- Same emotional energy every line (vary: angry → confused → resigned → explosive)
+- End flat — LAST line must be the biggest laugh
+- Be clever instead of relatable
+
 OUTPUT FORMAT — valid JSON:
 {
   "title": "EPISODE TITLE PT.X (2-3 words ALL CAPS + part number)",
