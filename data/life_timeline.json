@@ -1,0 +1,12 @@
+{
+  "current_era": "dating",
+  "current_episode": 1,
+  "relationship_status": "dating",
+  "work_status": "employee",
+  "living_situation": "apartment with Milo and Pickles",
+  "available_characters": ["orange_cat", "white_cat", "golden_retriever", "pickles"],
+  "era_topics_used": [],
+  "milestones_completed": [],
+  "era_sequence": ["dating", "engaged", "married", "pregnancy", "maternity_leave", "startup", "parenthood", "toddler"],
+  "compressed_context": "Luna is an orange tabby cat dating Milo (golden retriever). She works under Ms. Whiskers (terrible white cat boss) at a corporate office. They live together with Pickles, a parrot who repeats everything at the worst time. Currently in early dating phase."
+}

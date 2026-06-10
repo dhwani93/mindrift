@@ -31,6 +31,19 @@ logger = logging.getLogger(__name__)
 CONFIG_PATH = Path(__file__).parent.parent / "config" / "settings.yaml"
 SERIES_TRACKER_PATH = Path(__file__).parent.parent / "data" / "series_tracker.json"
 CHARACTER_BIBLE_PATH = Path(__file__).parent.parent / "data" / "character_bible.json"
+LIFE_TIMELINE_PATH = Path(__file__).parent.parent / "data" / "life_timeline.json"
+
+
+def load_life_context() -> str:
+    """Load compressed life context for the scriptwriter."""
+    if LIFE_TIMELINE_PATH.exists():
+        timeline = json.loads(LIFE_TIMELINE_PATH.read_text())
+        ctx = timeline.get("compressed_context", "")
+        era = timeline.get("current_era", "dating")
+        status = timeline.get("relationship_status", "dating")
+        work = timeline.get("work_status", "employee")
+        return f"LUNA'S CURRENT LIFE: {ctx}\nEra: {era} | Relationship: {status} | Work: {work}"
+    return "LUNA'S CURRENT LIFE: Luna is dating Milo. Works under Ms. Whiskers. Lives with Pickles."
 
 
 def load_character_bible() -> dict:
@@ -422,7 +435,17 @@ CHARACTER 2 — {fmt(c2, char2)}
         series_context = self._get_series_context(series_key) if series_key else ""
         learned = get_script_rules()
 
+        # Load Luna's life context
+        life_context = load_life_context()
+
+        # Get today's day for day awareness
+        from datetime import datetime
+        day_name = datetime.now().strftime("%A")
+
         prompt = f"""Write a {duration}-second pet drama dialogue.
+
+{life_context}
+TODAY IS: {day_name}
 
 TOPIC: {topic}
 SETTING: {setting}

@@ -57,6 +57,32 @@ class TelegramBot:
             logger.error(f"Telegram read failed: {e}")
             return None
 
+    def check_for_command(self, max_age_hours: int = 3) -> dict | None:
+        """Check if user sent a /command. Returns parsed command or None."""
+        try:
+            r = requests.get(f"{self.base_url}/getUpdates", timeout=10)
+            data = r.json()
+            if not data.get("result"):
+                return None
+            for update in reversed(data["result"]):
+                msg = update.get("message", {})
+                if str(msg.get("chat", {}).get("id")) == str(self.chat_id):
+                    msg_time = msg.get("date", 0)
+                    age_hours = (time.time() - msg_time) / 3600
+                    if age_hours <= max_age_hours:
+                        text = msg.get("text", "").strip()
+                        if text.startswith("/advance"):
+                            return {"command": "advance"}
+                        elif text.startswith("/addtopic "):
+                            return {"command": "addtopic", "value": text[10:].strip()}
+                        elif text.startswith("/addera "):
+                            return {"command": "addera", "value": text[8:].strip()}
+                        elif text.startswith("/status"):
+                            return {"command": "status"}
+            return None
+        except Exception:
+            return None
+
     def parse_seed_reply(self, reply: str) -> dict:
         """Parse user's reply to seed options.
 

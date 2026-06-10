@@ -22,6 +22,104 @@ CONFIG_PATH = Path(__file__).parent.parent / "config" / "settings.yaml"
 TRACKER_PATH = Path(__file__).parent.parent / "data" / "series_tracker.json"
 DAILY_STORY_PATH = Path(__file__).parent.parent / "data" / "daily_story.json"
 CHARACTER_BIBLE_PATH = Path(__file__).parent.parent / "data" / "character_bible.json"
+LIFE_TIMELINE_PATH = Path(__file__).parent.parent / "data" / "life_timeline.json"
+ERA_TOPICS_PATH = Path(__file__).parent.parent / "data" / "era_topics.json"
+
+
+def load_timeline() -> dict:
+    if LIFE_TIMELINE_PATH.exists():
+        return json.loads(LIFE_TIMELINE_PATH.read_text())
+    return {"current_era": "dating", "current_episode": 0, "era_topics_used": [], "compressed_context": "Luna is dating Milo."}
+
+
+def save_timeline(timeline: dict) -> None:
+    LIFE_TIMELINE_PATH.write_text(json.dumps(timeline, indent=2))
+
+
+def load_era_topics() -> dict:
+    if ERA_TOPICS_PATH.exists():
+        return json.loads(ERA_TOPICS_PATH.read_text())
+    return {}
+
+
+def mark_topic_used(topic: str) -> None:
+    timeline = load_timeline()
+    used = timeline.get("era_topics_used", [])
+    if topic not in used:
+        used.append(topic)
+    timeline["era_topics_used"] = used
+    save_timeline(timeline)
+
+
+def handle_command(cmd: dict, telegram) -> bool:
+    """Handle /advance, /addtopic, /addera, /status. Returns True if command handled."""
+    if cmd["command"] == "status":
+        timeline = load_timeline()
+        era_topics = load_era_topics()
+        era = timeline.get("current_era", "dating")
+        total = len(era_topics.get(era, []))
+        used = len(timeline.get("era_topics_used", []))
+        telegram.send_message(
+            f"📊 Status:\n"
+            f"Era: {era}\n"
+            f"Episode: EP.{timeline.get('current_episode', 0)}\n"
+            f"Relationship: {timeline.get('relationship_status', 'dating')}\n"
+            f"Work: {timeline.get('work_status', 'employee')}\n"
+            f"Topics used: {used}/{total} ({int(used/total*100) if total else 0}%)"
+        )
+        return True
+
+    elif cmd["command"] == "advance":
+        timeline = load_timeline()
+        seq = timeline.get("era_sequence", [])
+        current = timeline.get("current_era", "dating")
+        idx = seq.index(current) if current in seq else 0
+        if idx + 1 < len(seq):
+            next_era = seq[idx + 1]
+            timeline["current_era"] = next_era
+            timeline["era_topics_used"] = []
+            # Update statuses based on era
+            era_statuses = {
+                "engaged": {"relationship_status": "engaged"},
+                "married": {"relationship_status": "married"},
+                "pregnancy": {"relationship_status": "married", "work_status": "employee (pregnant)"},
+                "maternity_leave": {"work_status": "maternity leave"},
+                "startup": {"work_status": "entrepreneur"},
+                "parenthood": {"work_status": "entrepreneur + mom"},
+            }
+            for k, v in era_statuses.get(next_era, {}).items():
+                timeline[k] = v
+            save_timeline(timeline)
+            telegram.send_message(f"🎉 Advanced to: {next_era.upper()}! Luna's life just changed.")
+        else:
+            telegram.send_message("Already at the last era.")
+        return True
+
+    elif cmd["command"] == "addtopic":
+        era_topics = load_era_topics()
+        timeline = load_timeline()
+        era = timeline.get("current_era", "dating")
+        if era not in era_topics:
+            era_topics[era] = []
+        era_topics[era].append(cmd["value"])
+        ERA_TOPICS_PATH.write_text(json.dumps(era_topics, indent=2))
+        telegram.send_message(f"✅ Added topic to {era}: \"{cmd['value']}\"")
+        return True
+
+    elif cmd["command"] == "addera":
+        timeline = load_timeline()
+        seq = timeline.get("era_sequence", [])
+        seq.append(cmd["value"])
+        timeline["era_sequence"] = seq
+        save_timeline(timeline)
+        # Create empty topic pool
+        era_topics = load_era_topics()
+        era_topics[cmd["value"]] = []
+        ERA_TOPICS_PATH.write_text(json.dumps(era_topics, indent=2))
+        telegram.send_message(f"✅ Added new era: \"{cmd['value']}\" (after {seq[-2]})")
+        return True
+
+    return False
 
 
 def load_tracker() -> dict:
@@ -152,6 +250,11 @@ class Orchestrator:
             telegram = TelegramBot()
 
             daily = load_daily_story()
+
+            # Check for Telegram commands first
+            cmd = telegram.check_for_command(max_age_hours=3)
+            if cmd:
+                handle_command(cmd, telegram)
 
             # ==========================
             # SCENE 1: THE INCIDENT (morning)
@@ -354,6 +457,18 @@ class Orchestrator:
                         tracker["global_episode_count"] = ep_num
                         tracker["last_topics"] = (tracker.get("last_topics", []) + [title])[-10:]
                         save_tracker(tracker)
+                        # Update life timeline
+                        timeline = load_timeline()
+                        timeline["current_episode"] = ep_num
+                        save_timeline(timeline)
+                        mark_topic_used(title)
+                        # Check if era is running low
+                        era_topics = load_era_topics()
+                        era = timeline.get("current_era", "dating")
+                        total = len(era_topics.get(era, []))
+                        used = len(timeline.get("era_topics_used", []))
+                        if total > 0 and used / total > 0.8:
+                            telegram.send_message(f"🔄 Running low on '{era}' era topics ({used}/{total} used). Type /advance when ready for next era!")
                     elif approved is False:
                         save_feedback("video_feedback", reason)
 

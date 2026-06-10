@@ -57,6 +57,46 @@ utils/
   cost_tracker.py     — API spend tracking
 ```
 
+## Luna's Life Timeline
+Luna's life progresses through ERAS. Each era lasts as long as there's fresh content.
+```
+dating → engaged → married → pregnancy → maternity leave → startup (with baby) → parenthood → toddler → ...
+```
+Tracked in `data/life_timeline.json`. Scriptwriter reads compressed context before every script.
+Era advances when user says `/advance` or when 80% of era topics are used.
+
+## Telegram Commands & Flow
+
+### Daily Flow
+- **9 AM PDT** → Bot sends 5 topic options. Reply 1-5, type your own idea, or use a command. 15 min auto-pick.
+- **1 PM + 6 PM PDT** → Auto-generates Scenes 2 & 3. Sends video for approval. 15 min auto-approve.
+
+### Picking Topics
+- Reply `1` through `5` to pick a topic
+- Type your own idea directly (becomes Luna's episode)
+- Share what's on YOUR mind → scriptwriter turns it into Luna's day
+
+### Commands
+- `/advance` — move Luna to next life era (dating → engaged → married etc.)
+- `/addtopic [topic]` — add a topic to current era (e.g., `/addtopic Luna tries meal prepping`)
+- `/addera [name]` — add a new era to the story sequence
+- `/status` — see current era, episode count, topics remaining
+
+### Approving Content
+- Script: reply `1`, `2`, or `3` to pick from 3 options
+- Video prompt: reply `YES` or `NO + reason`
+- Final video: reply `YES` to upload, `NO + reason` to skip
+- 15-minute timeout → auto-approves
+- If NO, bot asks WHY → learns for next time
+
+### Examples
+```
+"my boss stole my presentation today" → Luna episode about credit-stealing
+/addtopic Luna discovers online shopping at 2am
+/advance → Luna gets engaged
+/status → "Era: dating | EP: 47 | Topics remaining: 38"
+```
+
 ## Costs
 - Seedance: ~$0.33 per 15s video
 - Claude: ~$0.03 per script
