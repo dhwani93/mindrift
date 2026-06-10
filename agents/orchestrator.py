@@ -234,17 +234,17 @@ class Orchestrator:
         return None
 
     def _build_seedance_prompt(self, script, setting: str) -> str:
-        cameras = ["Close-up", "Medium wide shot", "Low angle close-up", "Pull-back wide shot"]
+        cameras = ["Close-up showing face and upper body", "Medium wide shot showing character and full room environment", "Low angle looking up at character with ceiling and room visible", "Pull-back wide shot revealing the entire room and setting"]
         shots = []
         total = len(script.lines)
         for i, line_data in enumerate(script.lines):
             char_desc = get_char_visual(line_data["speaker"])
             cam = cameras[i % len(cameras)]
             if i == total - 1:
-                shots.append(f"Shot {i+1}: Slow zoom-in close-up of {char_desc} in {setting}. Character speaks: '{line_data['line']}' then 1 second of silence, holding expression.")
+                shots.append(f"Shot {i+1}: Slow zoom-in close-up of {char_desc}. Setting: {setting}. Character speaks: '{line_data['line']}' then 1 second of silence, holding expression.")
             else:
-                shots.append(f"Shot {i+1}: {cam} of {char_desc} in {setting}. Character speaks: '{line_data['line']}'")
-        return " ".join(shots) + " No background music. No sound effects. Only character dialogue. Photorealistic, cinematic, warm lighting, 4K."
+                shots.append(f"Shot {i+1}: {cam} of {char_desc}. Setting: {setting}. Character speaks: '{line_data['line']}'")
+        return " ".join(shots) + " The setting and environment must be clearly visible in every shot. No background music. No sound effects. Only character dialogue. Photorealistic, cinematic, warm natural lighting, shallow depth of field, 4K."
 
     def run_daily(self, run_date: str | None = None, dry_run: bool = False, slot: str = "morning") -> dict:
         run_date = run_date or date.today().isoformat()
@@ -264,6 +264,7 @@ class Orchestrator:
             telegram = TelegramBot()
 
             daily = load_daily_story()
+            scene_setting = ""  # Will be set in each slot branch
 
             # Check for Telegram commands first
             cmd = telegram.check_for_command(max_age_hours=3)
@@ -318,6 +319,9 @@ class Orchestrator:
                 else:
                     chosen_script = options[0]
 
+                # Set scene setting from seed
+                scene_setting = chosen_seed.setting if hasattr(chosen_seed, 'setting') and chosen_seed.setting else "apartment, morning light, messy kitchen counter"
+
                 # Save today's story for midday + evening
                 save_daily_story({
                     "date": run_date,
@@ -359,15 +363,15 @@ class Orchestrator:
                     if "golden_retriever" in morning_chars or "milo" in morning_chars:
                         # Morning was with Milo → vent to Jade (bestie)
                         vent_to = "jade"
-                        vent_setting = "coffee shop, two laptops on table, afternoon light"
+                        vent_setting = "bright modern coffee shop, two laptops open on wooden table, latte art in ceramic mugs, afternoon sunlight through large windows, casual coworker lunch vibe"
                     elif "white_cat" in morning_chars or "ms_whiskers" in morning_chars or "ms. whiskers" in morning_chars:
                         # Morning was at work → vent to Milo at home
                         vent_to = "golden_retriever"
-                        vent_setting = "apartment kitchen, coffee mugs on counter, evening light"
+                        vent_setting = "Luna and Milo's apartment kitchen, warm evening light, coffee mugs on granite counter, fridge with magnets and notes, lived-in cozy energy"
                     else:
                         # Default → vent to Jade
                         vent_to = "jade"
-                        vent_setting = "lunch cafe, outdoor patio, two chairs, afternoon sun"
+                        vent_setting = "outdoor lunch cafe with small round tables, string lights overhead, two chairs facing each other, afternoon sun, urban street in background"
 
                     chosen_script = writer.write(
                         topic=f"Luna vents about: {theme}. This morning: {morning.get('script_summary', '')}. Luna tells someone about it, they react.",
@@ -377,6 +381,8 @@ class Orchestrator:
                         duration=15,
                         tone="savage",
                     )
+
+                    scene_setting = vent_setting
 
                     # Update daily story
                     daily["midday_scene"] = {
@@ -413,16 +419,20 @@ class Orchestrator:
                         topic=f"Aftermath: {theme}. Morning: {morning_summary}. Midday: {midday_summary}. Now Luna is home, exhausted, Milo tries to help.",
                         character_1="orange_cat",
                         character_2="golden_retriever",
-                        setting="apartment living room, evening, couch with blankets, dim lamp light",
+                        setting="Luna and Milo's apartment living room at evening, warm dim lamp light casting soft shadows, cream couch with throw blankets, coffee table with mugs, Pickles perched on a shelf in background, cozy exhausted-after-work energy",
                         duration=15,
                         tone="wholesome",
                     )
+                    scene_setting = "Luna and Milo's apartment living room at evening, warm dim lamp light, cream couch with throw blankets, coffee table with mugs, cozy exhausted energy"
 
             # ==========================
             # GENERATE + APPROVE + UPLOAD (all slots)
             # ==========================
-            setting = chosen_script.visual_notes or "cozy apartment"
-            seedance_prompt = self._build_seedance_prompt(chosen_script, setting)
+            # Use the INTENDED setting from the scene, NOT what the scriptwriter made up
+            # scene_setting is set in each slot branch above
+            if not scene_setting:
+                scene_setting = chosen_seed.setting if hasattr(chosen_seed, 'setting') and chosen_seed.setting else "cozy apartment living room, warm afternoon light through window, plants on shelves, cream couch"
+            seedance_prompt = self._build_seedance_prompt(chosen_script, scene_setting)
 
             # Show summary and get approval
             summary_msg = f"🎬 Scene: \"{chosen_script.title}\"\n\n"

@@ -15,7 +15,8 @@ Top critical bugs:
 - Morning topic picker shows option 6 but code only accepts 1-5
 - Content policy fallback regex in seedance_video.py doesn't match actual prompt format
 - **TITLE-CONTENT MISMATCH** (found 2026-05-25): YouTube title uses chosen_script.title (LLM-invented) not chosen_seed.title (user-selected). The scriptwriter LLM can echo the seed topic as its title while writing completely unrelated dialogue. Two-pronged fix needed: (1) use seed title for YouTube metadata, (2) add topic-anchoring rule to scriptwriter system prompt. ALSO: midday/evening slots don't define chosen_seed in their main branch, so switching to chosen_seed.title would crash -- need a separate episode_title variable set in all branches.
+- **SETTING LOSS BUG** (found 2026-05-25): Seed's `setting` field is NEVER used in the Seedance video prompt. Flow: seed.setting -> scriptwriter input -> LLM rewrites it as `visual_notes` -> orchestrator line 424 uses `chosen_script.visual_notes` instead of seed setting -> Seedance prompt gets wrong setting. Midday has 3 hardcoded settings; evening has 1 single hardcoded setting. Fix: add `scene_setting` variable in each slot branch and use it at line 424 instead of `visual_notes`.
 
-**Why:** These bugs cause broken video prompts, narratively nonsensical scenes, and perpetual "first appearance" intros.
+**Why:** These bugs cause broken video prompts, narratively nonsensical scenes, perpetual "first appearance" intros, and videos rendered in settings that don't match the seed's carefully designed setting.
 
-**How to apply:** When reviewing PRs or changes to these files, verify these issues are addressed. The characters_introduced bug is especially insidious -- it silently produces subtly wrong output.
+**How to apply:** When reviewing PRs or changes to these files, verify these issues are addressed. The characters_introduced bug is especially insidious -- it silently produces subtly wrong output. The setting loss bug means every video's visual setting is an LLM hallucination rather than the intended seed setting.
