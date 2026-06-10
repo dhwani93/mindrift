@@ -1,10 +1,11 @@
 {
   "current_era": "dating",
-  "current_episode": 1,
+  "current_episode": 0,
   "relationship_status": "dating",
   "work_status": "employee",
   "living_situation": "apartment with Milo and Pickles",
   "available_characters": ["orange_cat", "white_cat", "golden_retriever", "pickles"],
+  "characters_introduced": [],
   "era_topics_used": [],
   "milestones_completed": [],
   "era_sequence": ["dating", "engaged", "married", "pregnancy", "maternity_leave", "startup", "parenthood", "toddler"],

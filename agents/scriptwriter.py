@@ -306,6 +306,17 @@ SARCASM IS THE VOICE:
 - "Sure, take credit. I only spent THREE WEEKS on it."
 - The audience should feel the eye-roll through the screen.
 
+CHARACTER INTRODUCTION RULE:
+If a character is appearing for the FIRST TIME EVER (check the context — it will say "FIRST APPEARANCE"),
+their very first line must naturally establish WHO they are and their relationship to Luna.
+Don't do a formal "Hi I'm Tiffany." Just make their personality OBVIOUS from how they talk and act.
+Example first appearances:
+- Milo's first line: "I made dinner! ...why is the smoke alarm going off?"
+- Ms. Whiskers' first line: "Luna. My office. You're one minute late. I'll document that."
+- Pickles' first line: "LUNA SAID SHE HATES—" Luna: "PICKLES NO."
+- Tiffany (future): "Darling, you won't BELIEVE. Also, why are you dressed like that?"
+After their intro episode, they're established and don't need re-introduction.
+
 DAY AWARENESS:
 - WEEKDAYS (Mon-Fri): Luna can be anywhere — work, home ranting about work, out with friends.
 - WEEKENDS (Sat-Sun): NO WORK. No Ms. Whiskers. No office. Luna is home, with friends, shopping, brunch, date night.
@@ -438,6 +449,19 @@ CHARACTER 2 — {fmt(c2, char2)}
         # Load Luna's life context
         life_context = load_life_context()
 
+        # Check if characters are being introduced for the first time
+        intro_context = ""
+        if LIFE_TIMELINE_PATH.exists():
+            timeline = json.loads(LIFE_TIMELINE_PATH.read_text())
+            introduced = timeline.get("characters_introduced", [])
+            new_chars = []
+            if character_1 not in introduced:
+                new_chars.append(character_1)
+            if character_2 not in introduced and character_2 != character_1:
+                new_chars.append(character_2)
+            if new_chars:
+                intro_context = f"\nFIRST APPEARANCE: {', '.join(new_chars)} is/are appearing for the FIRST TIME. Their first line must establish who they are and their relationship to Luna. Make it natural, not forced."
+
         # Get today's day for day awareness
         from datetime import datetime
         day_name = datetime.now().strftime("%A")
@@ -446,6 +470,7 @@ CHARACTER 2 — {fmt(c2, char2)}
 
 {life_context}
 TODAY IS: {day_name}
+{intro_context}
 
 TOPIC: {topic}
 SETTING: {setting}

@@ -457,9 +457,15 @@ class Orchestrator:
                         tracker["global_episode_count"] = ep_num
                         tracker["last_topics"] = (tracker.get("last_topics", []) + [title])[-10:]
                         save_tracker(tracker)
-                        # Update life timeline
+                        # Update life timeline + mark characters as introduced
                         timeline = load_timeline()
                         timeline["current_episode"] = ep_num
+                        introduced = timeline.get("characters_introduced", [])
+                        for line in chosen_script.lines:
+                            speaker = line.get("speaker", "")
+                            if speaker and speaker not in introduced:
+                                introduced.append(speaker)
+                        timeline["characters_introduced"] = introduced
                         save_timeline(timeline)
                         mark_topic_used(title)
                         # Check if era is running low
