@@ -440,7 +440,7 @@ class Orchestrator:
             summary_msg = f"🎬 Scene: \"{chosen_script.title}\"\n\n"
             for line in chosen_script.lines:
                 summary_msg += f"{line['speaker'].replace('_',' ').title()}: \"{line['line']}\"\n"
-            summary_msg += f"\n📍 {setting[:50]}\nReply YES/NO (auto-approves in 15 min)."
+            summary_msg += f"\n📍 {scene_setting[:50]}\nReply YES/NO (auto-approves in 15 min)."
             telegram.send_message(summary_msg)
 
             if not dry_run:
