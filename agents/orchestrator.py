@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 CONFIG_PATH = Path(__file__).parent.parent / "config" / "settings.yaml"
 SERIES_TRACKER_PATH = Path(__file__).parent.parent / "data" / "series_tracker.json"
+DAILY_MODE_PATH = Path(__file__).parent.parent / "data" / "daily_mode.json"
 
 CHAR_DESCS = {
     "orange_cat": "a fluffy real orange tabby cat with bright green eyes",
@@ -36,6 +37,37 @@ SERIES = {
     "couple_drama": {"char1": "orange_cat", "char2": "golden_retriever"},
     "roommates": {"char1": "senior_dog", "char2": "kitten"},
 }
+
+
+def load_daily_mode() -> dict:
+    """Load today's mode. Returns empty dict if no mode set or different day."""
+    if DAILY_MODE_PATH.exists():
+        data = json.loads(DAILY_MODE_PATH.read_text())
+        if data.get("date") == date.today().isoformat():
+            return data
+    return {}
+
+
+def save_daily_mode(mode: str, morning_pick: str, series_key: str | None, used_series: list[str]) -> None:
+    """Save today's mode decision."""
+    DAILY_MODE_PATH.write_text(json.dumps({
+        "date": date.today().isoformat(),
+        "mode": mode,  # "series" or "standalone"
+        "morning_pick": morning_pick,
+        "morning_series_key": series_key,
+        "used_series": used_series,
+    }, indent=2))
+
+
+def add_used_series(series_key: str) -> None:
+    """Mark a series as used today."""
+    mode = load_daily_mode()
+    if mode:
+        used = mode.get("used_series", [])
+        if series_key not in used:
+            used.append(series_key)
+            mode["used_series"] = used
+            DAILY_MODE_PATH.write_text(json.dumps(mode, indent=2))
 
 
 def load_tracker() -> dict:
@@ -176,7 +208,7 @@ class Orchestrator:
             telegram = TelegramBot()
 
             # ============================================
-            # STEP 1: Pick topic
+            # STEP 1: Pick topic (morning decides the day)
             # ============================================
             chosen_seed = None
             series_key = ""
@@ -199,7 +231,8 @@ class Orchestrator:
                 logger.info("[1/5] Sending topic options...")
                 seeds = seed_gen.generate_seeds()
                 categories = ["💼 OFFICE", "💕 COUPLE", "🏠 ROOMMATES", "📰 TRENDING", "🤪 WILD CARD"]
-                topic_msg = "🐾 Pick a topic:\n\n"
+                topic_msg = "🐾 Pick a topic (this decides the whole day):\n\n"
+                topic_msg += "Pick 1-3 → today is SERIES day (all 3 series run)\nPick 4-5 → today is STANDALONE day (no series)\n\n"
                 for i, s in enumerate(seeds[:5]):
                     cat = categories[i] if i < len(categories) else "🎲"
                     char2_label = f"+{s.character_2.replace('_',' ')}" if s.character_2 != "none" else " solo"
@@ -218,25 +251,60 @@ class Orchestrator:
                 else:
                     chosen_seed = seeds[0]
 
-            else:
-                # Auto mode (midday/evening) — pick unused series
-                logger.info(f"[1/5] Auto-picking series for {slot}...")
-                series_key = get_unused_series_today()
-                if series_key:
-                    series_info = SERIES[series_key]
-                    seeds = seed_gen.generate_seeds(bias=series_key.replace("_", " "))
-                    chosen_seed = seeds[0]
-                    # Override characters to match series
-                    chosen_seed.character = series_info["char1"]
-                    chosen_seed.character_2 = series_info["char2"]
-                    logger.info(f"  Auto-picked: {series_key} — {chosen_seed.title}")
+                # Determine if series or standalone based on pick
+                is_series = False
+                for sk, chars in SERIES.items():
+                    if chosen_seed.character == chars["char1"] and chosen_seed.character_2 == chars["char2"]:
+                        series_key = sk
+                        is_series = True
+                        break
+
+                # Save daily mode — this decides midday + evening behavior
+                if is_series:
+                    save_daily_mode("series", chosen_seed.title, series_key, [series_key])
+                    telegram.send_message(f"📅 Series day! 1PM + 6PM will auto-run the other two series.")
                 else:
-                    # All series used today — do a trending/wild card
+                    save_daily_mode("standalone", chosen_seed.title, None, [])
+                    telegram.send_message(f"📅 Standalone day! 1PM + 6PM will be trending/wildcard content.")
+
+            else:
+                # Auto mode (midday/evening) — read morning's decision
+                logger.info(f"[1/5] Auto-mode for {slot}...")
+                daily = load_daily_mode()
+
+                if not daily:
+                    # No morning run happened — do standalone
+                    logger.info("  No morning run found — standalone mode")
                     seeds = seed_gen.generate_seeds(bias="trending current events")
                     chosen_seed = seeds[0]
-                    logger.info(f"  All series used — trending: {chosen_seed.title}")
 
-            # Determine series key from characters
+                elif daily.get("mode") == "series":
+                    # Series day — pick an unused series
+                    used = daily.get("used_series", [])
+                    available = [sk for sk in SERIES if sk not in used]
+
+                    if available:
+                        series_key = available[0]
+                        series_info = SERIES[series_key]
+                        seeds = seed_gen.generate_seeds(bias=series_key.replace("_", " "))
+                        chosen_seed = seeds[0]
+                        chosen_seed.character = series_info["char1"]
+                        chosen_seed.character_2 = series_info["char2"]
+                        add_used_series(series_key)
+                        logger.info(f"  Series day — auto-picked: {series_key}")
+                    else:
+                        # All 3 series done — standalone fallback
+                        seeds = seed_gen.generate_seeds(bias="trending")
+                        chosen_seed = seeds[0]
+                        logger.info("  All series used — standalone fallback")
+
+                else:
+                    # Standalone day — do trending/wildcard
+                    seeds = seed_gen.generate_seeds(bias="trending current events wildcard")
+                    chosen_seed = seeds[0]
+                    logger.info(f"  Standalone day — trending: {chosen_seed.title}")
+
+            # Determine series key if not set
             if not series_key:
                 for sk, chars in SERIES.items():
                     if chosen_seed.character == chars["char1"] and chosen_seed.character_2 == chars["char2"]:
