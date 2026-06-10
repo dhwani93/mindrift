@@ -485,14 +485,18 @@ CHARACTER 2 — {fmt(c2, char2)}
         life_context = load_life_context()
 
         # Check if characters are being introduced for the first time
+        from agents.orchestrator import NAME_TO_KEY
         intro_context = ""
         if LIFE_TIMELINE_PATH.exists():
             timeline = json.loads(LIFE_TIMELINE_PATH.read_text())
             introduced = timeline.get("characters_introduced", [])
             new_chars = []
-            if character_1 not in introduced:
+            # Check both name and key formats
+            char1_introduced = character_1 in introduced or NAME_TO_KEY.get(character_1, character_1) in introduced
+            char2_introduced = character_2 in introduced or NAME_TO_KEY.get(character_2, character_2) in introduced
+            if not char1_introduced:
                 new_chars.append(character_1)
-            if character_2 not in introduced and character_2 != character_1:
+            if not char2_introduced and character_2 != character_1:
                 new_chars.append(character_2)
             if new_chars:
                 intro_context = f"\nFIRST APPEARANCE: {', '.join(new_chars)} is/are appearing for the FIRST TIME. Their first line must establish who they are and their relationship to Luna. Make it natural, not forced."

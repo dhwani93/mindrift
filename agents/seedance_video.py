@@ -57,10 +57,14 @@ class SeedanceVideoGenerator:
             if "content_policy" in str(e).lower() or "sensitive" in str(e).lower():
                 # Retry without dialogue — just visual, no speech
                 logger.warning(f"  Content policy hit. Retrying without speech...")
-                # Remove the dialogue from prompt
+                # Remove ALL dialogue from prompt — strip anything in quotes and speech references
                 import re
-                clean_prompt = re.sub(r"The cat speaks.*?'[^']*'", "The cat looks at camera with expressive face.", prompt)
-                clean_prompt = re.sub(r"Mouth moves naturally with speech\.", "", clean_prompt)
+                clean_prompt = re.sub(r"Character speaks:?\s*'[^']*'", "Character looks at camera with expressive face.", prompt)
+                clean_prompt = re.sub(r"The cat speaks.*?'[^']*'", "The cat looks at camera.", prompt)
+                clean_prompt = re.sub(r"speaks:?\s*'[^']*'", "reacts expressively.", clean_prompt)
+                clean_prompt = re.sub(r"Mouth moves.*?speech\.?", "", clean_prompt)
+                clean_prompt = re.sub(r"then \d+ second of silence.*?\.", "", clean_prompt)
+                clean_prompt = re.sub(r"Only character dialogue\.", "Silent scene.", clean_prompt)
                 result = fal_client.subscribe(
                     self.model,
                     arguments={

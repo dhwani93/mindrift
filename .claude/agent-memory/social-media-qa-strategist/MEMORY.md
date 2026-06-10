@@ -1,0 +1,2 @@
+- [Pipeline Audit May 2026](project_pipeline_audit_2026_05.md) — 7 critical bugs found across all pipeline files, especially Jade missing from mappings and broken intro detection
+- [User Context](user_context.md) — Dhwani builds automated YouTube Shorts pet-comedy pipeline, Season 1, wants thorough QA

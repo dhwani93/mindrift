@@ -356,11 +356,17 @@ class Orchestrator:
                     # If morning was at work (with white_cat/ms_whiskers), vent to Milo at home
                     # If morning was at home (with Milo), vent to someone else
                     morning_chars = str(morning.get("characters", []))
-                    if "white_cat" in morning_chars or "ms_whiskers" in morning_chars:
-                        vent_to = "golden_retriever"  # Milo
+                    if "golden_retriever" in morning_chars or "milo" in morning_chars:
+                        # Morning was with Milo → vent to Jade (bestie)
+                        vent_to = "jade"
+                        vent_setting = "coffee shop, two laptops on table, afternoon light"
+                    elif "white_cat" in morning_chars or "ms_whiskers" in morning_chars or "ms. whiskers" in morning_chars:
+                        # Morning was at work → vent to Milo at home
+                        vent_to = "golden_retriever"
                         vent_setting = "apartment kitchen, coffee mugs on counter, evening light"
                     else:
-                        vent_to = "white_cat"  # a colleague/friend at work
+                        # Default → vent to Jade
+                        vent_to = "jade"
                         vent_setting = "lunch cafe, outdoor patio, two chairs, afternoon sun"
 
                     chosen_script = writer.write(
