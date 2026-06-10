@@ -436,10 +436,19 @@ class Orchestrator:
             clip_path.unlink(missing_ok=True)
 
             # Final approval + upload
-            title = chosen_script.title
+            yt_title = f"{chosen_script.title} | Luna's Life EP.{ep_num} #shorts"
             dialogue = " | ".join(l["line"] for l in chosen_script.lines[:3])
-            description = f"{dialogue}...\n\n#shorts #pets #funny #pawsandopinions #lunaslife"
-            tags = self.config["seo"]["default_tags"]
+            description = (
+                f"🐾 {chosen_script.title} — Luna's Life EP.{ep_num}\n\n"
+                f"{dialogue}\n\n"
+                f"Luna is an orange tabby cat just trying to survive adulting. "
+                f"Follow her chaotic life with her boyfriend Milo, her terrible boss Ms. Whiskers, "
+                f"and Pickles the parrot who repeats EVERYTHING.\n\n"
+                f"New episodes every day!\n\n"
+                f"#shorts #pets #funny #petcomedy #pawsandopinions #lunaslife #catcomedy #funnyanimals #petdrama"
+            )
+            tags = self.config["seo"]["default_tags"] + ["luna's life", f"ep {ep_num}", chosen_script.title.lower()]
+            title = yt_title
 
             if dry_run:
                 logger.info(f"[DRY RUN] {title}")
