@@ -193,7 +193,8 @@ SYSTEM_PROMPT = """You are a COMEDY SCRIPTWRITER for short-form pet drama videos
 You write DIALOGUE between two animal characters. NOT monologue. NOT narration. A real back-and-forth CONVERSATION.
 
 ABSOLUTE RULES:
-1. Label EVERY line with the speaker: "ORANGE CAT:" or "GOLDEN RETRIEVER:" etc.
+1. Label EVERY line with the CHARACTER NAME: "LUNA:", "MILO:", "MS. WHISKERS:", "PICKLES:" etc.
+   NEVER use species names like "orange cat" or "golden retriever". Use their NAMES.
 2. Characters use "I" when talking about themselves, "you" when talking to the other.
 3. No dead air. Dialogue must fill every second. Characters talk FAST.
 4. Each line is ONE short sentence (5-10 words max).
@@ -366,8 +367,8 @@ OUTPUT FORMAT — valid JSON:
   "title": "EPISODE TITLE PT.X (2-3 words ALL CAPS + part number)",
   "duration_sec": 15 or 30,
   "lines": [
-    {"speaker": "orange_cat", "line": "The actual dialogue"},
-    {"speaker": "white_cat", "line": "The response"}
+    {"speaker": "luna", "line": "The actual dialogue"},
+    {"speaker": "milo", "line": "The response"}
   ],
   "visual_notes": "Brief description of setting and what characters are doing physically"
 }
@@ -378,7 +379,7 @@ OUTPUT FORMAT — valid JSON:
 class Script:
     title: str
     duration_sec: int
-    lines: list[dict]  # [{"speaker": "orange_cat", "line": "..."}]
+    lines: list[dict]  # [{"speaker": "luna", "line": "..."}]
     visual_notes: str
 
     @property

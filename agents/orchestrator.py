@@ -144,13 +144,27 @@ def save_daily_story(story: dict) -> None:
     DAILY_STORY_PATH.write_text(json.dumps(story, indent=2))
 
 
+# Maps character names (from scripts) to character bible keys (for visuals)
+NAME_TO_KEY = {
+    "luna": "luna", "orange_cat": "luna",
+    "milo": "milo", "golden_retriever": "milo",
+    "ms. whiskers": "ms_whiskers", "ms_whiskers": "ms_whiskers", "white_cat": "ms_whiskers", "ms whiskers": "ms_whiskers",
+    "pickles": "pickles", "parrot": "pickles",
+    "tiffany": "tiffany", "boba": "boba", "dave": "dave",
+    "priya": "priya", "marco": "marco", "karen": "karen_mil", "karen_mil": "karen_mil",
+    "cleo": "cleo", "gary": "gary", "suki": "suki", "rex": "rex",
+}
+
+
 def get_char_visual(char_key: str) -> str:
+    # Resolve name to bible key
+    bible_key = NAME_TO_KEY.get(char_key.lower().strip(), char_key)
     if CHARACTER_BIBLE_PATH.exists():
         bible = json.loads(CHARACTER_BIBLE_PATH.read_text())
         for pool in ["characters", "season_2_characters", "season_3_characters"]:
-            if char_key in bible.get(pool, {}):
-                return bible[pool][char_key].get("visual", char_key.replace("_", " "))
-    return char_key.replace("_", " ")
+            if bible_key in bible.get(pool, {}):
+                return bible[pool][bible_key].get("visual", bible_key.replace("_", " "))
+    return bible_key.replace("_", " ")
 
 
 class Orchestrator:
