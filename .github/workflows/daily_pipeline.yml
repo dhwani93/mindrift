@@ -2,7 +2,7 @@ name: Paws & Opinions — Daily Pipeline
 
 on:
   schedule:
-    # 3 videos/day at optimal posting times (PDT / California):
+    # 3 videos/day (PDT / California):
     # 9 AM PDT = 4 PM UTC
     - cron: '0 16 * * *'
     # 1 PM PDT = 8 PM UTC
@@ -12,19 +12,20 @@ on:
   workflow_dispatch:
     inputs:
       thought_seed:
-        description: 'Optional: Your thought of the day (leave empty for auto)'
+        description: 'Optional: topic seed'
         required: false
         type: string
 
 jobs:
   produce:
     runs-on: ubuntu-latest
-    timeout-minutes: 30  # 15 min auto-approve + generation time
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
         with:
           lfs: true
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-python@v5
         with:
@@ -46,7 +47,6 @@ jobs:
       - name: Run pipeline
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-
           FAL_KEY: ${{ secrets.FAL_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -54,20 +54,32 @@ jobs:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
         run: |
-          # Determine slot based on trigger type and UTC hour
+          # Determine slot — use RANGES to handle GitHub cron delays
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             SLOT="morning"
           else
             HOUR=$(date -u +%H)
-            if [ "$HOUR" = "16" ]; then
+            if [ "$HOUR" -ge 14 ] && [ "$HOUR" -le 18 ]; then
               SLOT="morning"
-            elif [ "$HOUR" = "20" ]; then
+            elif [ "$HOUR" -ge 19 ] && [ "$HOUR" -le 23 ]; then
               SLOT="midday"
             else
               SLOT="evening"
             fi
           fi
-          python3 main.py --date $(date +%Y-%m-%d) --slot $SLOT
+          # Use PDT date for consistency across all slots
+          DATE=$(TZ=America/Los_Angeles date +%Y-%m-%d)
+          echo "Slot: $SLOT | Date: $DATE"
+          python3 main.py --date $DATE --slot $SLOT
+
+      - name: Persist data files
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/series_tracker.json data/life_timeline.json data/daily_story.json data/era_topics.json data/learned_preferences.json data/trending_seeds.json
+          git diff --staged --quiet || git commit -m "Update data files [automated]"
+          git push || true
 
       - name: Upload output on failure
         if: failure()

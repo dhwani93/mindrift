@@ -1,10 +1,10 @@
 name: Paws & Opinions — Hourly Trend Scanner
 
 on:
-  schedule:
-    # Every hour
-    - cron: '0 * * * *'
-  workflow_dispatch:  # Manual trigger
+  # DISABLED — was failing every hour, wasting Actions minutes
+  # schedule:
+  #   - cron: '0 * * * *'
+  workflow_dispatch:  # Manual trigger only
 
 jobs:
   scan:

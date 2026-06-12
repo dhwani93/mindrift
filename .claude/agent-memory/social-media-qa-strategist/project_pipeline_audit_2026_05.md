@@ -1,22 +1,26 @@
 ---
-name: Luna's Life Pipeline Audit - May 2026
-description: Critical bugs found in the pet-POV comedy video pipeline across scriptwriter, orchestrator, seed generator, character bible, and video generation.
+name: Luna's Life Pipeline Audit - May 2026 (Expanded)
+description: Comprehensive audit of 3 user-reported bugs (humans in videos, missing morning seeds, stuck episode counter) plus 8 additional bugs found. 11 CRITICAL, 4 MEDIUM, 3 LOW issues total.
 type: project
 ---
 
-Full audit completed 2026-05-25. 7 critical, 9 medium, 6 low issues found.
+Full audit completed 2026-05-25. Three user-reported bugs confirmed with root causes. 11 critical issues total.
 
-Top critical bugs:
-- Jade missing from NAME_TO_KEY in orchestrator.py (breaks visual prompts)
-- Seed generator system prompt still describes SENIOR DOG and KITTEN (not Luna's Life characters)
-- Midday venting routes Luna to vent to her BOSS (white_cat) instead of a friend
-- character_bible.json lists Tiffany (S2) as Luna's best friend instead of Jade (S1)
-- characters_introduced tracking uses speaker names but comparison uses character keys -- intro detection NEVER works, every episode flags every character as first appearance
-- Morning topic picker shows option 6 but code only accepts 1-5
-- Content policy fallback regex in seedance_video.py doesn't match actual prompt format
-- **TITLE-CONTENT MISMATCH** (found 2026-05-25): YouTube title uses chosen_script.title (LLM-invented) not chosen_seed.title (user-selected). The scriptwriter LLM can echo the seed topic as its title while writing completely unrelated dialogue. Two-pronged fix needed: (1) use seed title for YouTube metadata, (2) add topic-anchoring rule to scriptwriter system prompt. ALSO: midday/evening slots don't define chosen_seed in their main branch, so switching to chosen_seed.title would crash -- need a separate episode_title variable set in all branches.
-- **SETTING LOSS BUG** (found 2026-05-25): Seed's `setting` field is NEVER used in the Seedance video prompt. Flow: seed.setting -> scriptwriter input -> LLM rewrites it as `visual_notes` -> orchestrator line 424 uses `chosen_script.visual_notes` instead of seed setting -> Seedance prompt gets wrong setting. Midday has 3 hardcoded settings; evening has 1 single hardcoded setting. Fix: add `scene_setting` variable in each slot branch and use it at line 424 instead of `visual_notes`.
+## Root causes of the 3 reported bugs:
 
-**Why:** These bugs cause broken video prompts, narratively nonsensical scenes, perpetual "first appearance" intros, and videos rendered in settings that don't match the seed's carefully designed setting.
+1. **Humans in videos**: Jade is defined as `species: "human"` with visual `"young woman with dark hair"` in character_bible.json. `get_char_visual("jade")` returns this human description, which goes directly into Seedance prompt. No "animals only" guard anywhere. Every midday episode where Luna vents to Jade renders a human.
 
-**How to apply:** When reviewing PRs or changes to these files, verify these issues are addressed. The characters_introduced bug is especially insidious -- it silently produces subtly wrong output. The setting loss bug means every video's visual setting is an LLM hallucination rather than the intended seed setting.
+2. **Missing morning seeds**: Two workflows race at cron `0 16 * * *` (9AM PDT). `daily_reminder.yml` sends seeds via Telegram fire-and-forget. `daily_pipeline.yml` generates its OWN different seeds and listens for reply. User gets 2 conflicting seed lists. Reminder's seeds are never consumed by anything.
+
+3. **Stuck at EP.1**: The REAL root cause is GitHub Actions does `actions/checkout@v4` every run, which resets `series_tracker.json` to its committed state (global_episode_count: 0). There is NO git commit+push step to persist state. Even if the counter were incremented in-memory, it's lost when the runner terminates.
+
+## Additional critical bugs found:
+
+- `chosen_seed` is undefined in midday/evening main branches (orchestrator.py lines 467, 473). Causes NameError crash for 2 of 3 daily slots.
+- Evening cron fires at 1AM UTC (next day), so daily_story date check fails -- evening NEVER connects to morning/midday scenes.
+- Content policy fallback in seedance_video.py line 63 uses `prompt` instead of `clean_prompt`, overwriting the first regex pass.
+- Seed generator system prompt lists SENIOR DOG and KITTEN characters alongside "SEASON 1 ONLY" instruction -- contradictory.
+
+**Why:** These bugs collectively mean: (a) only morning slot works, (b) no state persists between runs, (c) human characters appear in animal videos, (d) 3-scene daily arc is broken.
+
+**How to apply:** Fixes must be in this order: (1) Add git commit/push to GH Actions, (2) redesign Jade or add animal-only guard, (3) fix chosen_seed NameError in midday/evening, (4) delete or repurpose daily_reminder.yml, (5) fix evening date mismatch.

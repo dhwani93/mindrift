@@ -60,7 +60,7 @@ class SeedanceVideoGenerator:
                 # Remove ALL dialogue from prompt — strip anything in quotes and speech references
                 import re
                 clean_prompt = re.sub(r"Character speaks:?\s*'[^']*'", "Character looks at camera with expressive face.", prompt)
-                clean_prompt = re.sub(r"The cat speaks.*?'[^']*'", "The cat looks at camera.", prompt)
+                clean_prompt = re.sub(r"The cat speaks.*?'[^']*'", "The cat looks at camera.", clean_prompt)
                 clean_prompt = re.sub(r"speaks:?\s*'[^']*'", "reacts expressively.", clean_prompt)
                 clean_prompt = re.sub(r"Mouth moves.*?speech\.?", "", clean_prompt)
                 clean_prompt = re.sub(r"then \d+ second of silence.*?\.", "", clean_prompt)

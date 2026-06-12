@@ -485,15 +485,21 @@ CHARACTER 2 — {fmt(c2, char2)}
         life_context = load_life_context()
 
         # Check if characters are being introduced for the first time
-        from agents.orchestrator import NAME_TO_KEY
+        # Name-to-key mapping (duplicated here to avoid circular import)
+        _name_to_key = {
+            "luna": "luna", "orange_cat": "luna", "milo": "milo", "golden_retriever": "milo",
+            "ms. whiskers": "ms_whiskers", "ms_whiskers": "ms_whiskers", "white_cat": "ms_whiskers",
+            "pickles": "pickles", "jade": "jade", "tiffany": "tiffany", "boba": "boba",
+            "dave": "dave", "priya": "priya", "marco": "marco", "karen": "karen_mil",
+        }
         intro_context = ""
         if LIFE_TIMELINE_PATH.exists():
             timeline = json.loads(LIFE_TIMELINE_PATH.read_text())
             introduced = timeline.get("characters_introduced", [])
             new_chars = []
             # Check both name and key formats
-            char1_introduced = character_1 in introduced or NAME_TO_KEY.get(character_1, character_1) in introduced
-            char2_introduced = character_2 in introduced or NAME_TO_KEY.get(character_2, character_2) in introduced
+            char1_introduced = character_1 in introduced or _name_to_key.get(character_1, character_1) in introduced
+            char2_introduced = character_2 in introduced or _name_to_key.get(character_2, character_2) in introduced
             if not char1_introduced:
                 new_chars.append(character_1)
             if not char2_introduced and character_2 != character_1:

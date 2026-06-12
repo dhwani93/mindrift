@@ -244,7 +244,11 @@ class Orchestrator:
                 shots.append(f"Shot {i+1}: Slow zoom-in close-up of {char_desc}. Setting: {setting}. Character speaks: '{line_data['line']}' then 1 second of silence, holding expression.")
             else:
                 shots.append(f"Shot {i+1}: {cam} of {char_desc}. Setting: {setting}. Character speaks: '{line_data['line']}'")
-        return " ".join(shots) + " The setting and environment must be clearly visible in every shot. No background music. No sound effects. Only character dialogue. Photorealistic, cinematic, warm natural lighting, shallow depth of field, 4K."
+        # Check if Jade (human) is in this scene
+        has_jade = any(line_data.get("speaker", "").lower() in ("jade",) for line_data in script.lines)
+        human_guard = "" if has_jade else " No humans in this scene. All characters are animals."
+
+        return " ".join(shots) + f" The setting and environment must be clearly visible in every shot.{human_guard} No background music. No sound effects. Only character dialogue. Photorealistic, cinematic, warm natural lighting, shallow depth of field, 4K."
 
     def run_daily(self, run_date: str | None = None, dry_run: bool = False, slot: str = "morning") -> dict:
         run_date = run_date or date.today().isoformat()
@@ -384,6 +388,8 @@ class Orchestrator:
                     )
 
                     scene_setting = vent_setting
+                    # Create dummy chosen_seed for title/setting references below
+                    chosen_seed = type('Seed', (), {'title': daily.get('theme', 'LUNA'), 'setting': vent_setting, 'character': 'orange_cat', 'character_2': vent_to})()
 
                     # Update daily story
                     daily["midday_scene"] = {
@@ -426,6 +432,8 @@ class Orchestrator:
                         tone="wholesome",
                     )
                     scene_setting = "Luna and Milo's apartment living room at evening, warm dim lamp light, cream couch with throw blankets, coffee table with mugs, cozy exhausted energy"
+                    # Create dummy chosen_seed for title/setting references below
+                    chosen_seed = type('Seed', (), {'title': daily.get('theme', 'LUNA'), 'setting': scene_setting, 'character': 'orange_cat', 'character_2': 'golden_retriever'})()
 
             # ==========================
             # GENERATE + APPROVE + UPLOAD (all slots)
