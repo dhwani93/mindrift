@@ -157,12 +157,23 @@ class SeedGenerator:
         return response.content[0].text
 
     def generate_seeds(self, bias: str = "") -> list[EpisodeSeed]:
-        """Generate 5 ranked episode seeds.
+        """Generate 5 ranked episode seeds with era + day awareness."""
+        # Load Luna's current life context
+        life_context = ""
+        used_topics = ""
+        timeline_path = Path(__file__).parent.parent / "data" / "life_timeline.json"
+        if timeline_path.exists():
+            import json as _json
+            timeline = _json.loads(timeline_path.read_text())
+            life_context = f"\nLUNA'S CURRENT LIFE: {timeline.get('compressed_context', '')}\nEra: {timeline.get('current_era', 'dating')} | Relationship: {timeline.get('relationship_status', 'dating')} | Work: {timeline.get('work_status', 'employee')}"
+            topics = timeline.get("era_topics_used", [])
+            if topics:
+                used_topics = f"\nALREADY COVERED (don't repeat): {', '.join(topics[-15:])}"
 
-        Args:
-            bias: Optional bias like "more finance", "more wholesome", "more savage".
-        """
-        prompt = "Generate 5 ranked pet-POV episode seeds. Mix characters and content buckets."
+        from datetime import datetime
+        day_name = datetime.now().strftime("%A")
+
+        prompt = f"Generate 5 ranked pet-POV episode seeds for Luna's Life.{life_context}{used_topics}\nTODAY IS: {day_name}. Mix characters and content buckets."
         if bias:
             prompt += f" Bias toward: {bias}."
         prompt += " JSON only."
